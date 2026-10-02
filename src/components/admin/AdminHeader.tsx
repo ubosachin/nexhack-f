@@ -76,21 +76,21 @@ export function AdminHeader({
   const meta = getTabMeta();
 
   return (
-    <header className="sticky top-0 z-30 bg-slate-900/80 backdrop-blur-xl border-b border-slate-800/80 px-4 sm:px-8 py-4 flex items-center justify-between gap-4">
+    <header className="sticky top-0 z-30 bg-white/85 backdrop-blur-xl border-b border-slate-200/80 px-4 sm:px-8 py-4 flex items-center justify-between gap-4">
       <div className="flex items-center gap-3">
         <button
           onClick={onOpenMobile}
-          className="p-2 -ml-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 lg:hidden transition-colors"
+          className="p-2 -ml-2 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 lg:hidden transition-colors cursor-pointer"
           aria-label="Open navigation sidebar"
         >
           <Menu className="w-5 h-5" />
         </button>
 
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight flex items-center gap-2">
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
             {meta.title}
           </h1>
-          <p className="text-xs text-slate-400 hidden sm:block mt-0.5">
+          <p className="text-xs text-slate-500 hidden sm:block mt-0.5">
             {meta.subtitle}
           </p>
         </div>
@@ -101,10 +101,10 @@ export function AdminHeader({
         <button
           onClick={onRefresh}
           disabled={isRefreshing}
-          className="p-2 sm:px-3 sm:py-2 text-xs font-semibold rounded-xl text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 flex items-center gap-2 transition-all disabled:opacity-50"
+          className="p-2 sm:px-3 sm:py-2 text-xs font-semibold rounded-xl text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200 shadow-2xs flex items-center gap-2 transition-all disabled:opacity-50 cursor-pointer"
           title="Refresh Data"
         >
-          <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin text-indigo-400" : ""}`} />
+          <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin text-indigo-600" : "text-slate-500"}`} />
           <span className="hidden sm:inline">Refresh</span>
         </button>
 
@@ -112,7 +112,7 @@ export function AdminHeader({
         {actionLabel && onActionClick && (
           <button
             onClick={onActionClick}
-            className="px-3.5 py-2 text-xs font-semibold rounded-xl text-white bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 shadow-lg shadow-indigo-600/25 flex items-center gap-1.5 transition-all"
+            className="px-3.5 py-2 text-xs font-semibold rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm shadow-indigo-600/20 flex items-center gap-1.5 transition-all cursor-pointer"
           >
             {actionIcon || <Plus className="w-4 h-4" />}
             <span>{actionLabel}</span>

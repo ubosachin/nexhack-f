@@ -121,26 +121,26 @@ export function CreateHackathonModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl my-8 overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+      <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-2xl my-8 overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
         {/* Header */}
-        <div className="p-6 border-b border-slate-800 flex items-center justify-between">
+        <div className="p-6 border-b border-slate-100 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+            <div className="p-2.5 rounded-xl bg-indigo-50 text-indigo-700 border border-indigo-200">
               <Trophy className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-white">
+              <h2 className="text-lg font-bold text-slate-900">
                 {initialData ? "Edit Hackathon" : "Create New Hackathon"}
               </h2>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-500">
                 Configure details, tracks, mode, and timeline
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -149,14 +149,14 @@ export function CreateHackathonModal({
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-6 space-y-5 max-h-[75vh] overflow-y-auto">
           {error && (
-            <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs">
+            <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs">
               {error}
             </div>
           )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                 Hackathon Name *
               </label>
               <input
@@ -165,12 +165,12 @@ export function CreateHackathonModal({
                 value={formData.name || ""}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="e.g. NEXHACK 3.0"
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                 Edition Label
               </label>
               <input
@@ -178,13 +178,13 @@ export function CreateHackathonModal({
                 value={formData.edition || ""}
                 onChange={(e) => setFormData({ ...formData, edition: e.target.value })}
                 placeholder="e.g. Flagship Edition / Winter 2026"
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
               Tagline
             </label>
             <input
@@ -192,12 +192,12 @@ export function CreateHackathonModal({
               value={formData.tagline || ""}
               onChange={(e) => setFormData({ ...formData, tagline: e.target.value })}
               placeholder="e.g. Build the Next Frontier of Tech"
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
               Description
             </label>
             <textarea
@@ -205,13 +205,13 @@ export function CreateHackathonModal({
               value={formData.description || ""}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="Comprehensive summary of the hackathon theme, goals, and who should participate..."
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                 Status
               </label>
               <select
@@ -219,7 +219,7 @@ export function CreateHackathonModal({
                 onChange={(e) =>
                   setFormData({ ...formData, status: e.target.value as DbHackathon["status"] })
                 }
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900 focus:outline-none focus:bg-white focus:border-indigo-500 cursor-pointer"
               >
                 <option value="Upcoming">Upcoming</option>
                 <option value="Ongoing">Ongoing</option>
@@ -228,7 +228,7 @@ export function CreateHackathonModal({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                 Mode
               </label>
               <select
@@ -236,7 +236,7 @@ export function CreateHackathonModal({
                 onChange={(e) =>
                   setFormData({ ...formData, mode: e.target.value as DbHackathon["mode"] })
                 }
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900 focus:outline-none focus:bg-white focus:border-indigo-500 cursor-pointer"
               >
                 <option value="Hybrid">Hybrid</option>
                 <option value="Online">Online</option>
@@ -245,7 +245,7 @@ export function CreateHackathonModal({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                 Prize Pool
               </label>
               <input
@@ -253,14 +253,14 @@ export function CreateHackathonModal({
                 value={formData.prizePool || ""}
                 onChange={(e) => setFormData({ ...formData, prizePool: e.target.value })}
                 placeholder="e.g. ₹5,00,000 / Grants"
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                 Date Range / Timeline
               </label>
               <input
@@ -268,12 +268,12 @@ export function CreateHackathonModal({
                 value={formData.dateRange || ""}
                 onChange={(e) => setFormData({ ...formData, dateRange: e.target.value })}
                 placeholder="e.g. November 14 - 16, 2026"
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                 Location
               </label>
               <input
@@ -281,13 +281,13 @@ export function CreateHackathonModal({
                 value={formData.location || ""}
                 onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                 placeholder="e.g. Bengaluru + Virtual"
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
               Tags (Comma separated)
             </label>
             <input
@@ -295,20 +295,20 @@ export function CreateHackathonModal({
               value={tagInput}
               onChange={(e) => setTagInput(e.target.value)}
               placeholder="e.g. AI & ML, Web3, Full Stack, Robotics"
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10"
             />
           </div>
 
           {/* Tracks Section */}
-          <div className="pt-2 border-t border-slate-800/80">
+          <div className="pt-2 border-t border-slate-100">
             <div className="flex items-center justify-between mb-3">
-              <label className="text-xs font-bold text-slate-200 uppercase tracking-wider">
+              <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
                 Hackathon Tracks ({formData.tracks?.length || 0})
               </label>
               <button
                 type="button"
                 onClick={handleAddTrack}
-                className="px-2.5 py-1 text-xs font-semibold text-indigo-400 hover:text-indigo-300 bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 rounded-lg flex items-center gap-1"
+                className="px-2.5 py-1 text-xs font-semibold text-indigo-700 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg flex items-center gap-1 cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" /> Add Track
               </button>
@@ -318,7 +318,7 @@ export function CreateHackathonModal({
               {(formData.tracks || []).map((track, idx) => (
                 <div
                   key={idx}
-                  className="p-3 bg-slate-950/60 border border-slate-800/80 rounded-xl flex items-start gap-3"
+                  className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-start gap-3"
                 >
                   <div className="flex-1 space-y-2">
                     <input
@@ -326,20 +326,20 @@ export function CreateHackathonModal({
                       value={track.title}
                       onChange={(e) => handleUpdateTrack(idx, "title", e.target.value)}
                       placeholder="Track Title (e.g. AI & Automation)"
-                      className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                      className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-indigo-500"
                     />
                     <input
                       type="text"
                       value={track.desc}
                       onChange={(e) => handleUpdateTrack(idx, "desc", e.target.value)}
                       placeholder="Brief track description..."
-                      className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                      className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-700 placeholder:text-slate-400 focus:outline-none focus:border-indigo-500"
                     />
                   </div>
                   <button
                     type="button"
                     onClick={() => handleRemoveTrack(idx)}
-                    className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors mt-1"
+                    className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors mt-1 cursor-pointer"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -354,26 +354,26 @@ export function CreateHackathonModal({
               id="featuredHackathon"
               checked={formData.featured || false}
               onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
-              className="w-4 h-4 rounded text-indigo-600 bg-slate-950 border-slate-800 focus:ring-0 cursor-pointer"
+              className="w-4 h-4 rounded text-indigo-600 bg-slate-50 border-slate-300 focus:ring-0 cursor-pointer"
             />
-            <label htmlFor="featuredHackathon" className="text-xs font-medium text-slate-300 cursor-pointer">
+            <label htmlFor="featuredHackathon" className="text-xs font-medium text-slate-700 cursor-pointer">
               Mark as Featured Hackathon on Homepage & Showcase
             </label>
           </div>
 
           {/* Submit footer */}
-          <div className="pt-4 border-t border-slate-800 flex items-center justify-end gap-3">
+          <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-xl transition-colors"
+              className="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 bg-white hover:bg-slate-100 rounded-xl border border-slate-200 transition-colors cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-5 py-2 text-xs font-semibold text-white bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 rounded-xl shadow-lg shadow-indigo-600/25 flex items-center gap-2 transition-all disabled:opacity-50"
+              className="px-5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm shadow-indigo-600/20 flex items-center gap-2 transition-all disabled:opacity-50 cursor-pointer"
             >
               {isSubmitting ? (
                 <>

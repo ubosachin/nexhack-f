@@ -66,25 +66,48 @@ export default function AdminPage() {
   useEffect(() => {
     if (authStatus === "loading") return;
 
-    // 1. NextAuth user has admin role
-    if (session?.user?.role === "admin") {
+    // 1. NextAuth user has admin role in session (case-insensitive)
+    const isUserAdmin = String(session?.user?.role || "").toLowerCase().trim() === "admin";
+    if (isUserAdmin) {
       setIsAuthenticated(true);
-      setAdminEmail(session.user.email || "admin@nexhack.com");
+      setAdminEmail(session?.user?.email || "admin@nexhack.com");
       return;
     }
 
-    // 2. Emergency master passcode in sessionStorage
-    try {
-      const storedToken = sessionStorage.getItem("nexhack_admin_token");
-      const storedEmail = sessionStorage.getItem("nexhack_admin_email");
-      if (storedToken) {
-        setIsAuthenticated(true);
-        setAdminEmail(storedEmail || "admin@nexhack.internal");
-      } else {
+    // 2. Direct real-time database role check via /api/user/role if session exists
+    if (session?.user) {
+      fetch("/api/user/role")
+        .then((res) => res.json())
+        .then((data) => {
+          if (data?.isAdmin) {
+            setIsAuthenticated(true);
+            setAdminEmail(data.email || session.user?.email || "admin@nexhack.com");
+          } else {
+            checkLocalPasscode();
+          }
+        })
+        .catch(() => {
+          checkLocalPasscode();
+        });
+      return;
+    }
+
+    checkLocalPasscode();
+
+    function checkLocalPasscode() {
+      // 3. Emergency master passcode in sessionStorage
+      try {
+        const storedToken = sessionStorage.getItem("nexhack_admin_token");
+        const storedEmail = sessionStorage.getItem("nexhack_admin_email");
+        if (storedToken) {
+          setIsAuthenticated(true);
+          setAdminEmail(storedEmail || "admin@nexhack.internal");
+        } else {
+          setIsAuthenticated(false);
+        }
+      } catch {
         setIsAuthenticated(false);
       }
-    } catch {
-      setIsAuthenticated(false);
     }
   }, [session, authStatus]);
 
@@ -342,8 +365,8 @@ export default function AdminPage() {
   // Loading initial auth state
   if (isAuthenticated === null || authStatus === "loading") {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-400">
-        <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center text-slate-500">
+        <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
       </div>
     );
   }
@@ -351,38 +374,38 @@ export default function AdminPage() {
   // Signed in via OAuth but not an administrator
   if (!isAuthenticated && session?.user && session.user.role !== "admin") {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-4 relative overflow-hidden">
+      <div className="min-h-screen bg-slate-50 text-slate-900 flex items-center justify-center p-4 relative overflow-hidden">
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="w-full max-w-md bg-slate-900/90 border border-slate-800 rounded-2xl p-8 shadow-2xl text-center relative z-10">
-          <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center mx-auto mb-4">
+        <div className="w-full max-w-md bg-white border border-slate-200 rounded-2xl p-8 shadow-xl text-center relative z-10">
+          <div className="w-14 h-14 rounded-2xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center mx-auto mb-4">
             <ShieldAlert className="w-7 h-7" />
           </div>
-          <h2 className="text-xl font-bold text-white mb-1.5">Admin Permissions Required</h2>
-          <p className="text-xs text-slate-400 mb-6 leading-relaxed">
-            Signed in as <strong className="text-white">{session.user.email}</strong>.<br />
-            Your current platform role is <span className="text-amber-400 font-semibold px-2 py-0.5 rounded bg-amber-500/10">{session.user.role || "user"}</span>.
+          <h2 className="text-xl font-bold text-slate-900 mb-1.5">Admin Permissions Required</h2>
+          <p className="text-xs text-slate-600 mb-6 leading-relaxed">
+            Signed in as <strong className="text-slate-900">{session.user.email}</strong>.<br />
+            Your current platform role is <span className="text-amber-700 font-semibold px-2 py-0.5 rounded bg-amber-100">{session.user.role || "user"}</span>.
             Administrator permissions are required to access this portal.
           </p>
 
           <div className="space-y-3">
             <Link
               href="/"
-              className="w-full py-2.5 px-4 rounded-xl text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 flex items-center justify-center gap-2 transition-all shadow-lg shadow-indigo-600/25"
+              className="w-full py-2.5 px-4 rounded-xl text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 flex items-center justify-center gap-2 transition-all shadow-sm"
             >
               <span>Return to Public Website</span>
             </Link>
             <button
               onClick={() => signOut({ callbackUrl: "/signin?callbackUrl=/admin" })}
-              className="w-full py-2.5 px-4 rounded-xl text-xs font-semibold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700/80 border border-slate-700 flex items-center justify-center gap-2 transition-all"
+              className="w-full py-2.5 px-4 rounded-xl text-xs font-semibold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 border border-slate-200 flex items-center justify-center gap-2 transition-all"
             >
               <LogOut className="w-3.5 h-3.5" />
               <span>Switch / Sign Out Account</span>
             </button>
-            <div className="pt-3 border-t border-slate-800/80">
+            <div className="pt-3 border-t border-slate-100">
               <button
                 onClick={() => setIsAuthenticated(false)}
-                className="text-xs text-indigo-400 hover:underline"
+                className="text-xs text-indigo-600 hover:text-indigo-800 hover:underline"
               >
                 Use Emergency Master Passcode Instead
               </button>
@@ -399,7 +422,7 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex">
       {/* Sidebar Navigation */}
       <AdminSidebar
         activeTab={activeTab}

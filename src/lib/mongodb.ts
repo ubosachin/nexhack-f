@@ -741,13 +741,24 @@ export const dbService = {
 
   // ── 9. USER PROFILES ────────────────────────────────────────────────────────
 
-  async getUserProfile(userId: string): Promise<DbUserProfile | null> {
+  async getUserProfile(userId: string, email?: string): Promise<DbUserProfile | null> {
+    const cleanEmail = (email || "").toLowerCase().trim();
     const { db, isUsingMongo } = await connectToDatabase();
     if (isUsingMongo && db) {
-      const doc = await db.collection("user_profiles").findOne({ userId });
+      const doc = await db.collection("user_profiles").findOne({
+        $or: [
+          ...(userId ? [{ userId }] : []),
+          ...(cleanEmail ? [{ email: cleanEmail }] : []),
+          ...(cleanEmail ? [{ email: { $regex: new RegExp(`^${cleanEmail}$`, "i") } }] : []),
+        ],
+      });
       return doc as unknown as DbUserProfile | null;
     }
-    return inMemoryStore.userProfiles.find((p) => p.userId === userId) ?? null;
+    return (
+      inMemoryStore.userProfiles.find(
+        (p) => (userId && p.userId === userId) || (cleanEmail && p.email.toLowerCase() === cleanEmail)
+      ) ?? null
+    );
   },
 
   async upsertUserProfile(
@@ -839,10 +850,9 @@ export const dbService = {
         $or: [{ userId: data.userId }, { email: normalizedEmail }],
       });
 
+      const existingRole = String((existing as any)?.role || "").toLowerCase().trim();
       const role: "admin" | "user" =
-        isConfiguredAdmin || (existing as any)?.role === "admin"
-          ? "admin"
-          : (existing as any)?.role || "user";
+        isConfiguredAdmin || existingRole === "admin" ? "admin" : "user";
 
       await db.collection("user_profiles").updateOne(
         { $or: [{ userId: data.userId }, { email: normalizedEmail }] },
@@ -934,21 +944,35 @@ export const dbService = {
   },
 
   async getUserRole(userId: string, email?: string): Promise<"admin" | "user"> {
+    const cleanEmail = (email || "").toLowerCase().trim();
+    const adminEnv = (process.env.ADMIN_EMAILS || process.env.ADMIN_EMAIL || "")
+      .toLowerCase()
+      .split(",")
+      .map((e) => e.trim())
+      .filter(Boolean);
+
+    if (cleanEmail && adminEnv.includes(cleanEmail)) {
+      return "admin";
+    }
+
     const { db, isUsingMongo } = await connectToDatabase();
     if (isUsingMongo && db) {
       const doc = await db.collection("user_profiles").findOne({
         $or: [
           ...(userId ? [{ userId }] : []),
-          ...(email ? [{ email: email.toLowerCase().trim() }] : []),
+          ...(cleanEmail ? [{ email: cleanEmail }] : []),
+          ...(cleanEmail ? [{ email: { $regex: new RegExp(`^${cleanEmail}$`, "i") } }] : []),
         ],
       });
-      return (doc as any)?.role === "admin" ? "admin" : "user";
+      const roleStr = String((doc as any)?.role || "").toLowerCase().trim();
+      return roleStr === "admin" ? "admin" : "user";
     }
 
     const user = inMemoryStore.userProfiles.find(
-      (u) => (userId && u.userId === userId) || (email && u.email === email.toLowerCase().trim())
+      (u) => (userId && u.userId === userId) || (cleanEmail && u.email.toLowerCase() === cleanEmail)
     );
-    return user?.role === "admin" ? "admin" : "user";
+    const roleStr = String(user?.role || "").toLowerCase().trim();
+    return roleStr === "admin" ? "admin" : "user";
   },
 
   // ── 10. TEAMS ───────────────────────────────────────────────────────────────

@@ -51,16 +51,16 @@ export function InquiriesTab({ inquiries, onUpdateStatus, onDelete }: InquiriesT
   return (
     <div className="space-y-6">
       {/* Top Filter and Search Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-slate-900/60 border border-slate-800/80">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-white border border-slate-200 shadow-xs">
         <div className="flex flex-wrap items-center gap-2">
           {["All", "Pending", "Contacted", "Approved", "Archived"].map((status) => (
             <button
               key={status}
               onClick={() => setFilter(status)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                 filter === status
-                  ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/25"
-                  : "text-slate-400 hover:text-white hover:bg-slate-800"
+                  ? "bg-indigo-600 text-white shadow-xs"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
               }`}
             >
               {status}
@@ -70,23 +70,23 @@ export function InquiriesTab({ inquiries, onUpdateStatus, onDelete }: InquiriesT
         </div>
 
         <div className="relative w-full sm:w-64">
-          <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search university, contact..."
-            className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3.5 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3.5 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10"
           />
         </div>
       </div>
 
       {/* Inquiries Cards */}
       {filtered.length === 0 ? (
-        <div className="py-20 text-center rounded-2xl bg-slate-900/40 border border-slate-800/60 p-8">
-          <Building2 className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-          <h3 className="text-base font-bold text-white">No Inquiries Found</h3>
-          <p className="text-xs text-slate-400 mt-1">
+        <div className="py-20 text-center rounded-2xl bg-white border border-slate-200 shadow-xs p-8">
+          <Building2 className="w-12 h-12 text-slate-400 mx-auto mb-3" />
+          <h3 className="text-base font-bold text-slate-900">No Inquiries Found</h3>
+          <p className="text-xs text-slate-500 mt-1">
             {searchQuery || filter !== "All"
               ? "No campus partnership requests match the filter."
               : "Inquiries submitted via the Campus page will appear here."}
@@ -97,15 +97,15 @@ export function InquiriesTab({ inquiries, onUpdateStatus, onDelete }: InquiriesT
           {filtered.map((inq) => (
             <div
               key={inq.id}
-              className="rounded-2xl bg-slate-900/60 border border-slate-800/80 p-5 flex flex-col justify-between hover:border-slate-700 transition-all shadow-lg shadow-black/20"
+              className="rounded-2xl bg-white border border-slate-200 hover:border-slate-300 p-5 flex flex-col justify-between shadow-xs hover:shadow-md transition-all"
             >
               <div>
                 <div className="flex items-start justify-between gap-3 mb-2">
                   <div>
-                    <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">
+                    <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-wider">
                       {inq.partnershipType}
                     </span>
-                    <h4 className="text-base font-bold text-white mt-0.5">
+                    <h4 className="text-base font-bold text-slate-900 mt-0.5">
                       {inq.institutionName}
                     </h4>
                   </div>
@@ -117,60 +117,60 @@ export function InquiriesTab({ inquiries, onUpdateStatus, onDelete }: InquiriesT
                     }
                     className={`px-2.5 py-1 rounded-xl text-xs font-semibold border cursor-pointer focus:outline-none transition-colors ${
                       inq.status === "Approved"
-                        ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
+                        ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                         : inq.status === "Contacted"
-                        ? "bg-blue-500/10 text-blue-400 border-blue-500/30"
+                        ? "bg-blue-50 text-blue-700 border-blue-200"
                         : inq.status === "Archived"
-                        ? "bg-slate-800 text-slate-400 border-slate-700"
-                        : "bg-amber-500/10 text-amber-400 border-amber-500/30"
+                        ? "bg-slate-100 text-slate-700 border-slate-200"
+                        : "bg-amber-50 text-amber-700 border-amber-200"
                     }`}
                   >
-                    <option value="Pending" className="bg-slate-900 text-white">Pending</option>
-                    <option value="Contacted" className="bg-slate-900 text-white">Contacted</option>
-                    <option value="Approved" className="bg-slate-900 text-white">Approved</option>
-                    <option value="Archived" className="bg-slate-900 text-white">Archived</option>
+                    <option value="Pending" className="bg-white text-slate-900">Pending</option>
+                    <option value="Contacted" className="bg-white text-slate-900">Contacted</option>
+                    <option value="Approved" className="bg-white text-slate-900">Approved</option>
+                    <option value="Archived" className="bg-white text-slate-900">Archived</option>
                   </select>
                 </div>
 
                 {/* Contact details */}
-                <div className="space-y-1.5 my-3 text-xs text-slate-300">
+                <div className="space-y-1.5 my-3 text-xs text-slate-600">
                   <p className="flex items-center gap-2">
-                    <span className="text-slate-500">Contact:</span>
-                    <span className="font-semibold text-slate-200">{inq.contactName}</span>
+                    <span className="text-slate-400">Contact:</span>
+                    <span className="font-semibold text-slate-800">{inq.contactName}</span>
                   </p>
                   <p className="flex items-center gap-2">
-                    <Mail className="w-3.5 h-3.5 text-slate-500" />
+                    <Mail className="w-3.5 h-3.5 text-slate-400" />
                     <a
                       href={`mailto:${inq.contactEmail}`}
-                      className="text-indigo-400 hover:underline truncate"
+                      className="text-indigo-600 hover:underline truncate"
                     >
                       {inq.contactEmail}
                     </a>
                   </p>
                   <p className="flex items-center gap-2">
-                    <MapPin className="w-3.5 h-3.5 text-slate-500" />
+                    <MapPin className="w-3.5 h-3.5 text-slate-400" />
                     <span>{inq.city}</span>
-                    <span className="text-slate-500">•</span>
-                    <Users className="w-3.5 h-3.5 text-slate-500" />
+                    <span className="text-slate-300">•</span>
+                    <Users className="w-3.5 h-3.5 text-slate-400" />
                     <span>{inq.expectedStudents}</span>
                   </p>
                 </div>
 
                 {/* Notes */}
                 {inq.notes && (
-                  <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800/60 text-xs text-slate-400 leading-relaxed mb-4">
+                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-xs text-slate-600 leading-relaxed mb-4 italic">
                     "{inq.notes}"
                   </div>
                 )}
               </div>
 
               {/* Bottom */}
-              <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-500">
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400">
                 <span>Received {new Date(inq.createdAt).toLocaleDateString()}</span>
                 <button
                   onClick={() => handleDelete(inq.id, inq.institutionName)}
                   disabled={deletingId === inq.id}
-                  className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors flex items-center gap-1.5"
+                  className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer"
                   title="Delete Inquiry"
                 >
                   {deletingId === inq.id ? (

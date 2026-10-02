@@ -99,16 +99,16 @@ export function RegistrationsTab({
   return (
     <div className="space-y-6">
       {/* Control bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-slate-900/60 border border-slate-800/80">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-white border border-slate-200 shadow-xs">
         <div className="flex flex-wrap items-center gap-2">
           {["All", "Confirmed", "Approved", "Waitlisted", "Cancelled"].map((status) => (
             <button
               key={status}
               onClick={() => setStatusFilter(status)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                 statusFilter === status
-                  ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/25"
-                  : "text-slate-400 hover:text-white hover:bg-slate-800"
+                  ? "bg-indigo-600 text-white shadow-xs"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
               }`}
             >
               {status}
@@ -119,20 +119,20 @@ export function RegistrationsTab({
 
         <div className="flex items-center gap-3">
           <div className="relative w-full sm:w-64">
-            <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search participant, college, event..."
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3.5 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3.5 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10"
             />
           </div>
 
           <button
             onClick={handleExportCSV}
             disabled={filtered.length === 0}
-            className="px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700/80 border border-slate-700 flex items-center gap-1.5 transition-colors disabled:opacity-50 shrink-0"
+            className="px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200 shadow-2xs flex items-center gap-1.5 transition-colors disabled:opacity-50 shrink-0 cursor-pointer"
             title="Export filtered registrations to CSV"
           >
             <Download className="w-3.5 h-3.5" />
@@ -143,20 +143,20 @@ export function RegistrationsTab({
 
       {/* Table */}
       {filtered.length === 0 ? (
-        <div className="py-20 text-center rounded-2xl bg-slate-900/40 border border-slate-800/60 p-8">
-          <ClipboardList className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-          <h3 className="text-base font-bold text-white">No Registrations Found</h3>
-          <p className="text-xs text-slate-400 mt-1">
+        <div className="py-20 text-center rounded-2xl bg-white border border-slate-200 shadow-xs p-8">
+          <ClipboardList className="w-12 h-12 text-slate-400 mx-auto mb-3" />
+          <h3 className="text-base font-bold text-slate-900">No Registrations Found</h3>
+          <p className="text-xs text-slate-500 mt-1">
             {searchQuery || statusFilter !== "All"
               ? "Try adjusting your search query or filters."
               : "Participant registrations submitted through the public portal will appear here."}
           </p>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-2xl bg-slate-900/60 border border-slate-800/80">
+        <div className="overflow-x-auto rounded-2xl bg-white border border-slate-200 shadow-xs">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
-              <tr className="border-b border-slate-800/80 bg-slate-950/40 text-slate-400 uppercase text-[10px] font-bold tracking-wider">
+              <tr className="border-b border-slate-200 bg-slate-50 text-slate-600 uppercase text-[10px] font-bold tracking-wider">
                 <th className="p-4">Applicant</th>
                 <th className="p-4">College / Degree</th>
                 <th className="p-4">Event / Hackathon</th>
@@ -166,32 +166,32 @@ export function RegistrationsTab({
                 <th className="p-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60">
+            <tbody className="divide-y divide-slate-100">
               {filtered.map((reg) => (
-                <tr key={reg.id} className="hover:bg-slate-800/30 transition-colors">
+                <tr key={reg.id} className="hover:bg-slate-50/80 transition-colors">
                   <td className="p-4">
-                    <p className="font-semibold text-slate-200">{reg.fullName}</p>
-                    <p className="text-slate-400 text-[11px]">{reg.email}</p>
-                    {reg.phone && <p className="text-slate-500 text-[10px]">{reg.phone}</p>}
+                    <p className="font-semibold text-slate-900">{reg.fullName}</p>
+                    <p className="text-slate-500 text-[11px]">{reg.email}</p>
+                    {reg.phone && <p className="text-slate-400 text-[10px]">{reg.phone}</p>}
                   </td>
 
                   <td className="p-4">
-                    <p className="text-slate-300 font-medium">{reg.collegeOrSchool}</p>
+                    <p className="text-slate-800 font-medium">{reg.collegeOrSchool}</p>
                     <p className="text-slate-500 text-[11px]">{reg.degreeOrGrade || "Student"}</p>
                   </td>
 
                   <td className="p-4">
-                    <span className="px-2 py-0.5 rounded-md bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 font-medium">
+                    <span className="px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200 font-semibold">
                       {reg.eventOrHackathon}
                     </span>
                     <p className="text-slate-500 text-[10px] mt-1">{reg.role}</p>
                   </td>
 
-                  <td className="p-4 text-slate-300">
+                  <td className="p-4 text-slate-700">
                     {reg.teamName ? (
-                      <span className="font-medium text-slate-200">{reg.teamName}</span>
+                      <span className="font-medium text-slate-900">{reg.teamName}</span>
                     ) : (
-                      <span className="text-slate-500 italic">Solo</span>
+                      <span className="text-slate-400 italic">Solo</span>
                     )}
                   </td>
 
@@ -203,16 +203,16 @@ export function RegistrationsTab({
                       }
                       className={`px-2.5 py-1 rounded-lg text-xs font-semibold border cursor-pointer focus:outline-none transition-colors ${
                         reg.status === "Approved" || reg.status === "Confirmed"
-                          ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                           : reg.status === "Waitlisted"
-                          ? "bg-amber-500/10 text-amber-400 border-amber-500/30"
-                          : "bg-rose-500/10 text-rose-400 border-rose-500/30"
+                          ? "bg-amber-50 text-amber-700 border-amber-200"
+                          : "bg-rose-50 text-rose-700 border-rose-200"
                       }`}
                     >
-                      <option value="Confirmed" className="bg-slate-900 text-white">Confirmed</option>
-                      <option value="Approved" className="bg-slate-900 text-white">Approved</option>
-                      <option value="Waitlisted" className="bg-slate-900 text-white">Waitlisted</option>
-                      <option value="Cancelled" className="bg-slate-900 text-white">Cancelled</option>
+                      <option value="Confirmed" className="bg-white text-slate-900">Confirmed</option>
+                      <option value="Approved" className="bg-white text-slate-900">Approved</option>
+                      <option value="Waitlisted" className="bg-white text-slate-900">Waitlisted</option>
+                      <option value="Cancelled" className="bg-white text-slate-900">Cancelled</option>
                     </select>
                   </td>
 
@@ -223,7 +223,7 @@ export function RegistrationsTab({
                           href={reg.githubUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="p-1 rounded text-slate-400 hover:text-white"
+                          className="p-1 rounded text-slate-400 hover:text-slate-800"
                           title="GitHub Profile"
                         >
                           <GitHubIcon className="w-3.5 h-3.5" />
@@ -234,7 +234,7 @@ export function RegistrationsTab({
                           href={reg.linkedinUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="p-1 rounded text-slate-400 hover:text-blue-400"
+                          className="p-1 rounded text-slate-400 hover:text-blue-600"
                           title="LinkedIn Profile"
                         >
                           <LinkedInIcon className="w-3.5 h-3.5" />
@@ -247,7 +247,7 @@ export function RegistrationsTab({
                     <button
                       onClick={() => handleDelete(reg.id, reg.fullName)}
                       disabled={deletingId === reg.id}
-                      className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors"
+                      className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
                       title="Delete Application"
                     >
                       {deletingId === reg.id ? (

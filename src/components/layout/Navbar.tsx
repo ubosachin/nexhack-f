@@ -39,7 +39,23 @@ export const Navbar: React.FC<NavbarProps> = ({ onJoinClick }) => {
 
   const isSignedIn = status === "authenticated" && !!session?.user;
   const user = session?.user;
-  const isAdmin = user?.role === "admin";
+  const [dbRole, setDbRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isSignedIn && user?.email) {
+      fetch("/api/user/role")
+        .then((res) => res.json())
+        .then((data) => {
+          if (data?.success && data?.role) {
+            setDbRole(data.role);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [isSignedIn, user?.email]);
+
+  const isAdmin =
+    String(dbRole || user?.role || "").toLowerCase().trim() === "admin";
   const firstName = user?.name?.split(" ")[0] ?? "You";
   const avatarSrc = user?.image ?? null;
 

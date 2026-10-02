@@ -36,6 +36,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async jwt({ token, user, account }) {
       if (user?.id) token.id = user.id;
       if (account?.provider) token.provider = account.provider;
+      if (user?.email) token.email = user.email;
 
       const userId = (token.id ?? token.sub ?? "") as string;
       const userEmail = (user?.email ?? token.email ?? "") as string;
@@ -50,16 +51,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             avatarUrl: user.image,
             provider: account?.provider,
           });
-          token.role = profile.role || "user";
+          const rawRole = String(profile.role || "").toLowerCase().trim();
+          token.role = rawRole === "admin" ? "admin" : "user";
         } catch (err) {
           console.error("NextAuth syncUserOnSignIn error:", err);
           token.role = "user";
         }
-      } else if (!token.role && userId) {
+      } else if (userId || userEmail) {
         try {
           token.role = await dbService.getUserRole(userId, userEmail);
         } catch {
-          token.role = "user";
+          const rawRole = String(token.role || "").toLowerCase().trim();
+          token.role = rawRole === "admin" ? "admin" : "user";
         }
       }
 
@@ -70,16 +73,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (session.user) {
         session.user.id = (token.id ?? token.sub ?? "") as string;
         session.user.provider = (token.provider ?? "") as string;
+        const lookupEmail = session.user.email || (token.email as string) || "";
 
         // Direct Real-time Database Role Check from MongoDB
         try {
           const dbRole = await dbService.getUserRole(
             session.user.id,
-            session.user.email
+            lookupEmail
           );
           session.user.role = dbRole;
         } catch {
-          session.user.role = (token.role ?? "user") as "admin" | "user";
+          const rawRole = String(token.role ?? "user").toLowerCase().trim();
+          session.user.role = rawRole === "admin" ? "admin" : "user";
         }
       }
       return session;

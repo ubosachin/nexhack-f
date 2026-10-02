@@ -55,21 +55,21 @@ export function CreateEventModal({ isOpen, onClose, onSubmit }: CreateEventModal
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-xl my-8 overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-        <div className="p-6 border-b border-slate-800 flex items-center justify-between">
+    <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+      <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-xl my-8 overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+        <div className="p-6 border-b border-slate-100 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+            <div className="p-2.5 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100">
               <Calendar className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-white">Schedule Community Session</h2>
-              <p className="text-xs text-slate-400">Add a hands-on workshop or keynote</p>
+              <h2 className="text-lg font-bold text-slate-900">Schedule Community Session</h2>
+              <p className="text-xs text-slate-500">Add a hands-on workshop or keynote</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -77,13 +77,13 @@ export function CreateEventModal({ isOpen, onClose, onSubmit }: CreateEventModal
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
           {error && (
-            <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs">
+            <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs">
               {error}
             </div>
           )}
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
               Session Title *
             </label>
             <input
@@ -92,13 +92,13 @@ export function CreateEventModal({ isOpen, onClose, onSubmit }: CreateEventModal
               value={formData.title || ""}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               placeholder="e.g. Master LangGraph & Autonomous AI Agents"
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white focus:ring-1 focus:ring-indigo-500 transition-colors"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                 Category
               </label>
               <select
@@ -106,7 +106,7 @@ export function CreateEventModal({ isOpen, onClose, onSubmit }: CreateEventModal
                 onChange={(e) =>
                   setFormData({ ...formData, category: e.target.value as any })
                 }
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-indigo-500 focus:bg-white focus:ring-1 focus:ring-indigo-500 transition-colors"
               >
                 <option value="AI & Machine Learning">AI & Machine Learning</option>
                 <option value="Web Development">Web Development</option>
@@ -116,7 +116,7 @@ export function CreateEventModal({ isOpen, onClose, onSubmit }: CreateEventModal
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                 Audience Level
               </label>
               <select
@@ -124,7 +124,7 @@ export function CreateEventModal({ isOpen, onClose, onSubmit }: CreateEventModal
                 onChange={(e) =>
                   setFormData({ ...formData, level: e.target.value as any })
                 }
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-indigo-500 focus:bg-white focus:ring-1 focus:ring-indigo-500 transition-colors"
               >
                 <option value="Beginner">Beginner</option>
                 <option value="Intermediate">Intermediate</option>
@@ -134,13 +134,13 @@ export function CreateEventModal({ isOpen, onClose, onSubmit }: CreateEventModal
           </div>
 
           {/* Speaker details */}
-          <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800 space-y-3">
-            <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+          <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+            <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
               Speaker Profile
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-[11px] text-slate-400 mb-1">Speaker Name *</label>
+                <label className="block text-[11px] font-medium text-slate-600 mb-1">Speaker Name *</label>
                 <input
                   type="text"
                   required
@@ -152,12 +152,12 @@ export function CreateEventModal({ isOpen, onClose, onSubmit }: CreateEventModal
                     })
                   }
                   placeholder="e.g. Dr. Priya Nair"
-                  className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] text-slate-400 mb-1">Role / Designation</label>
+                <label className="block text-[11px] font-medium text-slate-600 mb-1">Role / Designation</label>
                 <input
                   type="text"
                   value={formData.speaker?.role || ""}
@@ -168,12 +168,12 @@ export function CreateEventModal({ isOpen, onClose, onSubmit }: CreateEventModal
                     })
                   }
                   placeholder="e.g. Senior AI Architect"
-                  className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] text-slate-400 mb-1">Company / Organization</label>
+                <label className="block text-[11px] font-medium text-slate-600 mb-1">Company / Organization</label>
                 <input
                   type="text"
                   value={formData.speaker?.company || ""}
@@ -184,12 +184,12 @@ export function CreateEventModal({ isOpen, onClose, onSubmit }: CreateEventModal
                     })
                   }
                   placeholder="e.g. Google / Microsoft"
-                  className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] text-slate-400 mb-1">Avatar Image URL</label>
+                <label className="block text-[11px] font-medium text-slate-600 mb-1">Avatar Image URL</label>
                 <input
                   type="text"
                   value={formData.speaker?.avatar || ""}
@@ -200,7 +200,7 @@ export function CreateEventModal({ isOpen, onClose, onSubmit }: CreateEventModal
                     })
                   }
                   placeholder="https://..."
-                  className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500"
                 />
               </div>
             </div>
@@ -208,48 +208,48 @@ export function CreateEventModal({ isOpen, onClose, onSubmit }: CreateEventModal
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Date</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Date</label>
               <input
                 type="text"
                 value={formData.date || ""}
                 onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                 placeholder="e.g. Nov 22, 2026"
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Time</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Time</label>
               <input
                 type="text"
                 value={formData.time || ""}
                 onChange={(e) => setFormData({ ...formData, time: e.target.value })}
                 placeholder="e.g. 6:30 PM IST"
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Seats Available</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Seats Available</label>
               <input
                 type="number"
                 value={formData.seatsLeft || 100}
                 onChange={(e) => setFormData({ ...formData, seatsLeft: parseInt(e.target.value) || 0 })}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white"
               />
             </div>
           </div>
 
-          <div className="pt-4 border-t border-slate-800 flex items-center justify-end gap-3">
+          <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-xl transition-colors"
+              className="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-5 py-2 text-xs font-semibold text-white bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 rounded-xl shadow-lg shadow-indigo-600/25 flex items-center gap-2 transition-all disabled:opacity-50"
+              className="px-5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm shadow-indigo-600/20 flex items-center gap-2 transition-all disabled:opacity-50"
             >
               {isSubmitting ? (
                 <>

@@ -109,23 +109,23 @@ export function OverviewTab({
   return (
     <div className="space-y-8">
       {/* Quick Launch & System Banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-indigo-950/80 via-slate-900 to-slate-900 border border-indigo-500/20 p-6 sm:p-8">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-indigo-50/80 via-white to-purple-50/60 border border-indigo-100 p-6 sm:p-8 shadow-xs">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="max-w-xl">
             <div className="flex items-center gap-2 mb-2">
-              <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5" />
+              <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-700 border border-indigo-200/80 flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
                 NEXHACK Admin Control Center
               </span>
-              <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1.5">
-                <ShieldCheck className="w-3.5 h-3.5" />
+              <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200/80 flex items-center gap-1.5">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
                 Live Ops
               </span>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
               Manage Flagship Hackathons & Community
             </h2>
-            <p className="text-slate-400 text-sm mt-2 leading-relaxed">
+            <p className="text-slate-600 text-sm mt-2 leading-relaxed">
               Track real-time registrations, configure competition tracks, evaluate participant rosters, and coordinate institutional university partnerships.
             </p>
           </div>
@@ -133,23 +133,23 @@ export function OverviewTab({
           <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={onOpenCreateHackathon}
-              className="px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-500 shadow-lg shadow-indigo-600/30 flex items-center gap-2 transition-all hover:scale-[1.02]"
+              className="px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm shadow-indigo-600/20 flex items-center gap-2 transition-all hover:scale-[1.02] cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               <span>Create Hackathon</span>
             </button>
             <button
               onClick={onOpenCreateEvent}
-              className="px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-200 hover:text-white bg-slate-800 hover:bg-slate-700/80 border border-slate-700 flex items-center gap-2 transition-all"
+              className="px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200 shadow-2xs flex items-center gap-2 transition-all cursor-pointer"
             >
-              <Calendar className="w-4 h-4" />
+              <Calendar className="w-4 h-4 text-slate-500" />
               <span>New Workshop</span>
             </button>
           </div>
         </div>
 
         {/* Decorative backdrop */}
-        <div className="absolute right-0 top-0 w-80 h-full bg-gradient-to-l from-indigo-500/10 to-transparent pointer-events-none" />
+        <div className="absolute right-0 top-0 w-80 h-full bg-gradient-to-l from-indigo-100/40 to-transparent pointer-events-none" />
       </div>
 
       {/* KPI Cards Grid */}
@@ -160,30 +160,30 @@ export function OverviewTab({
             <div
               key={idx}
               onClick={() => onSelectTab(card.tab)}
-              className="group cursor-pointer rounded-2xl bg-slate-900/60 hover:bg-slate-900/90 border border-slate-800/80 hover:border-slate-700/80 p-5 transition-all duration-200 hover:shadow-xl hover:shadow-black/40 hover:-translate-y-0.5"
+              className="group cursor-pointer rounded-2xl bg-white hover:bg-slate-50/60 border border-slate-200/90 hover:border-slate-300 p-5 transition-all duration-200 shadow-xs hover:shadow-md hover:-translate-y-0.5"
             >
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
                     {card.title}
                   </p>
-                  <p className="text-3xl font-extrabold text-white mt-1.5 tracking-tight">
+                  <p className="text-3xl font-extrabold text-slate-900 mt-1.5 tracking-tight">
                     {card.count.toLocaleString()}
                   </p>
                   <p className="text-xs text-slate-500 mt-1">{card.desc}</p>
                 </div>
                 <div
-                  className={`p-3 rounded-xl bg-gradient-to-br ${card.color} text-white shadow-lg shadow-black/20 group-hover:scale-110 transition-transform`}
+                  className={`p-3 rounded-xl bg-gradient-to-br ${card.color} text-white shadow-sm group-hover:scale-110 transition-transform`}
                 >
                   <Icon className="w-5 h-5" />
                 </div>
               </div>
 
-              <div className="mt-4 pt-4 border-t border-slate-800/60 flex items-center justify-between text-xs">
-                <span className="text-slate-400 group-hover:text-indigo-400 transition-colors font-medium">
+              <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between text-xs">
+                <span className="text-slate-600 group-hover:text-indigo-600 transition-colors font-semibold">
                   Open {card.title}
                 </span>
-                <ArrowUpRight className="w-4 h-4 text-slate-500 group-hover:text-indigo-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+                <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-indigo-600 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
               </div>
             </div>
           );
@@ -193,21 +193,21 @@ export function OverviewTab({
       {/* Tables Preview Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Recent Registrations Preview */}
-        <div className="rounded-2xl bg-slate-900/60 border border-slate-800/80 p-6 flex flex-col justify-between">
+        <div className="rounded-2xl bg-white border border-slate-200 p-6 shadow-xs flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                <div className="p-2 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200">
                   <ClipboardList className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-white">Recent Registrations</h3>
-                  <p className="text-xs text-slate-400">Latest students applying for events</p>
+                  <h3 className="text-base font-bold text-slate-900">Recent Registrations</h3>
+                  <p className="text-xs text-slate-500">Latest students applying for events</p>
                 </div>
               </div>
               <button
                 onClick={() => onSelectTab("registrations")}
-                className="text-xs font-semibold text-indigo-400 hover:text-indigo-300 flex items-center gap-1 transition-colors"
+                className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 transition-colors cursor-pointer"
               >
                 View All ({registrations.length})
                 <ArrowUpRight className="w-3.5 h-3.5" />
@@ -215,28 +215,28 @@ export function OverviewTab({
             </div>
 
             {registrations.length === 0 ? (
-              <div className="py-12 text-center text-slate-500 text-xs">
+              <div className="py-12 text-center text-slate-400 text-xs">
                 No participant registrations yet.
               </div>
             ) : (
-              <div className="divide-y divide-slate-800/60">
+              <div className="divide-y divide-slate-100">
                 {registrations.slice(0, 5).map((reg) => (
                   <div key={reg.id} className="py-3 flex items-center justify-between gap-3">
                     <div className="truncate">
-                      <p className="text-sm font-semibold text-slate-200 truncate">
+                      <p className="text-sm font-semibold text-slate-800 truncate">
                         {reg.fullName}
                       </p>
-                      <p className="text-xs text-slate-400 truncate">
-                        {reg.collegeOrSchool} • <span className="text-indigo-400">{reg.eventOrHackathon}</span>
+                      <p className="text-xs text-slate-500 truncate">
+                        {reg.collegeOrSchool} • <span className="text-indigo-600 font-medium">{reg.eventOrHackathon}</span>
                       </p>
                     </div>
                     <span
                       className={`shrink-0 px-2 py-0.5 rounded-full text-[11px] font-semibold ${
                         reg.status === "Approved" || reg.status === "Confirmed"
-                          ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                          ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
                           : reg.status === "Waitlisted"
-                          ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                          : "bg-slate-800 text-slate-400"
+                          ? "bg-amber-50 text-amber-700 border border-amber-200"
+                          : "bg-slate-100 text-slate-600 border border-slate-200"
                       }`}
                     >
                       {reg.status}
@@ -249,21 +249,21 @@ export function OverviewTab({
         </div>
 
         {/* Campus Inquiries Preview */}
-        <div className="rounded-2xl bg-slate-900/60 border border-slate-800/80 p-6 flex flex-col justify-between">
+        <div className="rounded-2xl bg-white border border-slate-200 p-6 shadow-xs flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-lg bg-pink-500/10 text-pink-400 border border-pink-500/20">
+                <div className="p-2 rounded-xl bg-pink-50 text-pink-600 border border-pink-200">
                   <Building2 className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-white">Campus Inquiries</h3>
-                  <p className="text-xs text-slate-400">Institutional universities & leads</p>
+                  <h3 className="text-base font-bold text-slate-900">Campus Inquiries</h3>
+                  <p className="text-xs text-slate-500">Institutional universities & leads</p>
                 </div>
               </div>
               <button
                 onClick={() => onSelectTab("inquiries")}
-                className="text-xs font-semibold text-indigo-400 hover:text-indigo-300 flex items-center gap-1 transition-colors"
+                className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 transition-colors cursor-pointer"
               >
                 View All ({inquiries.length})
                 <ArrowUpRight className="w-3.5 h-3.5" />
@@ -271,28 +271,28 @@ export function OverviewTab({
             </div>
 
             {inquiries.length === 0 ? (
-              <div className="py-12 text-center text-slate-500 text-xs">
+              <div className="py-12 text-center text-slate-400 text-xs">
                 No campus inquiries received yet.
               </div>
             ) : (
-              <div className="divide-y divide-slate-800/60">
+              <div className="divide-y divide-slate-100">
                 {inquiries.slice(0, 5).map((inq) => (
                   <div key={inq.id} className="py-3 flex items-center justify-between gap-3">
                     <div className="truncate">
-                      <p className="text-sm font-semibold text-slate-200 truncate">
+                      <p className="text-sm font-semibold text-slate-800 truncate">
                         {inq.institutionName}
                       </p>
-                      <p className="text-xs text-slate-400 truncate">
+                      <p className="text-xs text-slate-500 truncate">
                         {inq.contactName} ({inq.city}) • {inq.partnershipType}
                       </p>
                     </div>
                     <span
                       className={`shrink-0 px-2 py-0.5 rounded-full text-[11px] font-semibold ${
                         inq.status === "Approved"
-                          ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                          ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
                           : inq.status === "Contacted"
-                          ? "bg-blue-500/10 text-blue-400 border border-blue-500/20"
-                          : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                          ? "bg-blue-50 text-blue-700 border border-blue-200"
+                          : "bg-amber-50 text-amber-700 border border-amber-200"
                       }`}
                     >
                       {inq.status}
