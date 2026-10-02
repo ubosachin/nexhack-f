@@ -19,6 +19,8 @@ import {
   LogOut,
   ChevronDown,
   ClipboardList,
+  Shield,
+  Sparkles,
 } from "lucide-react";
 import { NexhackLogo } from "../ui/NexhackLogo";
 
@@ -37,6 +39,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onJoinClick }) => {
 
   const isSignedIn = status === "authenticated" && !!session?.user;
   const user = session?.user;
+  const isAdmin = user?.role === "admin";
   const firstName = user?.name?.split(" ")[0] ?? "You";
   const avatarSrc = user?.image ?? null;
 
@@ -141,6 +144,16 @@ export const Navbar: React.FC<NavbarProps> = ({ onJoinClick }) => {
 
             {/* Desktop right — auth-aware */}
             <div className="hidden sm:flex items-center gap-2">
+              {isAdmin && (
+                <Link
+                  href="/admin"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200/80 hover:bg-indigo-100/80 hover:border-indigo-300 transition-all shadow-xs"
+                >
+                  <Shield className="w-3.5 h-3.5 text-indigo-600" />
+                  <span>Admin</span>
+                </Link>
+              )}
+
               {isSignedIn ? (
                 /* ── Profile dropdown ── */
                 <div className="relative" ref={profileRef}>
@@ -173,6 +186,24 @@ export const Navbar: React.FC<NavbarProps> = ({ onJoinClick }) => {
 
                       {/* Menu items */}
                       <div className="p-1.5 space-y-0.5">
+                        {isAdmin && (
+                          <Link
+                            href="/admin"
+                            onClick={() => setProfileOpen(false)}
+                            className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-indigo-50/70 hover:bg-indigo-100/70 border border-indigo-200/60 transition-colors group mb-1"
+                          >
+                            <div className="w-7 h-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center shrink-0">
+                              <Shield className="w-3.5 h-3.5" />
+                            </div>
+                            <div>
+                              <p className="text-xs font-bold text-indigo-900 group-hover:text-indigo-950 flex items-center gap-1">
+                                Admin Console
+                                <Sparkles className="w-3 h-3 text-indigo-600" />
+                              </p>
+                              <p className="text-[10px] text-indigo-600 font-medium">Operations & management</p>
+                            </div>
+                          </Link>
+                        )}
                         {profileMenuItems.map(({ label, href, icon: Icon, desc }) => (
                           <Link
                             key={label}
@@ -300,6 +331,16 @@ export const Navbar: React.FC<NavbarProps> = ({ onJoinClick }) => {
             <div className="pt-2 border-t border-slate-100 flex flex-col gap-2">
               {isSignedIn ? (
                 <div className="flex flex-col gap-1">
+                  {isAdmin && (
+                    <Link
+                      href="/admin"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-indigo-50 text-indigo-700 border border-indigo-200/60 transition-colors mb-1"
+                    >
+                      <Shield className="w-4 h-4 text-indigo-600 shrink-0" />
+                      <span>Admin Console</span>
+                    </Link>
+                  )}
                   {profileMenuItems.map(({ label, href, icon: Icon }) => (
                     <Link
                       key={label}

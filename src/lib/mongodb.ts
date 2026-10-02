@@ -235,8 +235,8 @@ export async function connectToDatabase(): Promise<{ client: MongoClient | null;
 
   try {
     const client = new MongoClient(uri, {
-      serverSelectionTimeoutMS: 2000,
-      connectTimeoutMS: 2000,
+      serverSelectionTimeoutMS: 8000,
+      connectTimeoutMS: 8000,
     });
 
     await client.connect();
@@ -250,8 +250,9 @@ export async function connectToDatabase(): Promise<{ client: MongoClient | null;
     await seedMongoIfEmpty(db);
 
     return { client, db, isUsingMongo: true };
-  } catch {
-    // If MongoDB is not actively running locally yet, fallback seamlessly to inMemoryStore
+  } catch (err) {
+    console.error("MongoDB Atlas connection error:", err);
+    // If MongoDB is not reachable, fallback seamlessly to inMemoryStore
     return { client: null, db: null, isUsingMongo: false };
   }
 }
@@ -788,6 +789,166 @@ export const dbService = {
     };
     inMemoryStore.userProfiles.push(newProfile);
     return newProfile;
+  },
+
+  async getAllUserProfiles(): Promise<DbUserProfile[]> {
+    const { db, isUsingMongo } = await connectToDatabase();
+    if (isUsingMongo && db) {
+      const list = await db.collection("user_profiles").find({}).sort({ createdAt: -1 }).toArray();
+      return list as unknown as DbUserProfile[];
+    }
+    return [...inMemoryStore.userProfiles];
+  },
+
+  async deleteUserProfile(userId: string): Promise<boolean> {
+    const { db, isUsingMongo } = await connectToDatabase();
+    if (isUsingMongo && db) {
+      const res = await db.collection("user_profiles").deleteOne({ userId });
+      return res.deletedCount > 0;
+    }
+    const idx = inMemoryStore.userProfiles.findIndex((p) => p.userId === userId);
+    if (idx !== -1) {
+      inMemoryStore.userProfiles.splice(idx, 1);
+      return true;
+    }
+    return false;
+  },
+
+  async syncUserOnSignIn(data: {
+    userId: string;
+    email: string;
+    displayName?: string | null;
+    avatarUrl?: string | null;
+    provider?: string;
+  }): Promise<DbUserProfile> {
+    const now = new Date().toISOString();
+    const normalizedEmail = (data.email || "").toLowerCase().trim();
+
+    // Check configured admin emails
+    const adminEnv = (process.env.ADMIN_EMAIL || process.env.ADMIN_EMAILS || "")
+      .toLowerCase()
+      .split(",")
+      .map((e) => e.trim())
+      .filter(Boolean);
+
+    const isConfiguredAdmin = adminEnv.includes(normalizedEmail);
+
+    const { db, isUsingMongo } = await connectToDatabase();
+    if (isUsingMongo && db) {
+      const existing = await db.collection("user_profiles").findOne({
+        $or: [{ userId: data.userId }, { email: normalizedEmail }],
+      });
+
+      const role: "admin" | "user" =
+        isConfiguredAdmin || (existing as any)?.role === "admin"
+          ? "admin"
+          : (existing as any)?.role || "user";
+
+      await db.collection("user_profiles").updateOne(
+        { $or: [{ userId: data.userId }, { email: normalizedEmail }] },
+        {
+          $set: {
+            userId: data.userId,
+            email: normalizedEmail,
+            role,
+            lastLoginAt: now,
+            updatedAt: now,
+            ...(data.displayName ? { displayName: data.displayName } : {}),
+            ...(data.avatarUrl ? { avatarUrl: data.avatarUrl } : {}),
+            ...(data.provider ? { provider: data.provider } : {}),
+          },
+          $setOnInsert: {
+            createdAt: now,
+          },
+        },
+        { upsert: true }
+      );
+
+      const doc = await db.collection("user_profiles").findOne({
+        $or: [{ userId: data.userId }, { email: normalizedEmail }],
+      });
+      return (doc as unknown as DbUserProfile) || {
+        userId: data.userId,
+        email: normalizedEmail,
+        role,
+        createdAt: now,
+        updatedAt: now,
+      };
+    }
+
+    // In-Memory store
+    let profile = inMemoryStore.userProfiles.find(
+      (p) => p.userId === data.userId || p.email === normalizedEmail
+    );
+
+    const role: "admin" | "user" =
+      isConfiguredAdmin || profile?.role === "admin"
+        ? "admin"
+        : profile?.role || "user";
+
+    if (profile) {
+      profile.userId = data.userId;
+      profile.email = normalizedEmail;
+      profile.role = role;
+      profile.lastLoginAt = now;
+      profile.updatedAt = now;
+      if (data.displayName && !profile.displayName) profile.displayName = data.displayName;
+      if (data.avatarUrl && !profile.avatarUrl) profile.avatarUrl = data.avatarUrl;
+      if (data.provider) profile.provider = data.provider;
+    } else {
+      profile = {
+        userId: data.userId,
+        email: normalizedEmail,
+        role,
+        displayName: data.displayName || undefined,
+        avatarUrl: data.avatarUrl || undefined,
+        provider: data.provider,
+        lastLoginAt: now,
+        createdAt: now,
+        updatedAt: now,
+      };
+      inMemoryStore.userProfiles.unshift(profile);
+    }
+    return profile;
+  },
+
+  async updateUserRole(userId: string, role: "admin" | "user"): Promise<boolean> {
+    const now = new Date().toISOString();
+    const { db, isUsingMongo } = await connectToDatabase();
+    if (isUsingMongo && db) {
+      const res = await db.collection("user_profiles").updateOne(
+        { userId },
+        { $set: { role, updatedAt: now } }
+      );
+      await this.logAction(`Updated User Role to ${role}`, userId, "Admin");
+      return res.matchedCount > 0;
+    }
+    const user = inMemoryStore.userProfiles.find((u) => u.userId === userId);
+    if (user) {
+      user.role = role;
+      user.updatedAt = now;
+      await this.logAction(`Updated User Role to ${role}`, userId, "Admin");
+      return true;
+    }
+    return false;
+  },
+
+  async getUserRole(userId: string, email?: string): Promise<"admin" | "user"> {
+    const { db, isUsingMongo } = await connectToDatabase();
+    if (isUsingMongo && db) {
+      const doc = await db.collection("user_profiles").findOne({
+        $or: [
+          ...(userId ? [{ userId }] : []),
+          ...(email ? [{ email: email.toLowerCase().trim() }] : []),
+        ],
+      });
+      return (doc as any)?.role === "admin" ? "admin" : "user";
+    }
+
+    const user = inMemoryStore.userProfiles.find(
+      (u) => (userId && u.userId === userId) || (email && u.email === email.toLowerCase().trim())
+    );
+    return user?.role === "admin" ? "admin" : "user";
   },
 
   // ── 10. TEAMS ───────────────────────────────────────────────────────────────

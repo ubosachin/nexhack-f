@@ -109,7 +109,10 @@ export interface DbUserProfile {
   _id?: string;
   userId: string;           // JWT sub / session.user.id
   email: string;
+  role?: "admin" | "user";  // RBAC permission
   displayName?: string;
+  provider?: string;
+  lastLoginAt?: string;
   bio?: string;
   college?: string;
   course?: string;
