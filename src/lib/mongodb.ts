@@ -943,6 +943,61 @@ export const dbService = {
     return false;
   },
 
+  async updateUserProfileByAdmin(
+    userId: string,
+    updates: Partial<DbUserProfile>
+  ): Promise<DbUserProfile | null> {
+    const now = new Date().toISOString();
+    const { db, isUsingMongo } = await connectToDatabase();
+
+    const cleanData: Record<string, any> = { updatedAt: now };
+    if (updates.displayName !== undefined) cleanData.displayName = updates.displayName.trim();
+    if (updates.email !== undefined) cleanData.email = updates.email.toLowerCase().trim();
+    if (updates.role !== undefined) cleanData.role = updates.role === "admin" ? "admin" : "user";
+    if (updates.bio !== undefined) cleanData.bio = updates.bio.trim();
+    if (updates.college !== undefined) cleanData.college = updates.college.trim();
+    if (updates.course !== undefined) cleanData.course = updates.course.trim();
+    if (updates.graduationYear !== undefined) cleanData.graduationYear = updates.graduationYear.trim();
+    if (updates.avatarUrl !== undefined) cleanData.avatarUrl = updates.avatarUrl.trim();
+    if (updates.githubUrl !== undefined) cleanData.githubUrl = updates.githubUrl.trim();
+    if (updates.linkedinUrl !== undefined) cleanData.linkedinUrl = updates.linkedinUrl.trim();
+    if (updates.twitterUrl !== undefined) cleanData.twitterUrl = updates.twitterUrl.trim();
+    if (updates.skills !== undefined) {
+      cleanData.skills = Array.isArray(updates.skills)
+        ? updates.skills.map((s) => s.trim()).filter(Boolean)
+        : [];
+    }
+
+    if (isUsingMongo && db) {
+      await db.collection("user_profiles").updateOne(
+        { userId },
+        { $set: cleanData }
+      );
+      await this.logAction(
+        `Admin Updated Profile of ${cleanData.displayName || cleanData.email || userId}`,
+        userId,
+        "Admin"
+      );
+      const doc = await db.collection("user_profiles").findOne({ userId });
+      return doc as unknown as DbUserProfile | null;
+    }
+
+    const idx = inMemoryStore.userProfiles.findIndex((u) => u.userId === userId);
+    if (idx !== -1) {
+      inMemoryStore.userProfiles[idx] = {
+        ...inMemoryStore.userProfiles[idx],
+        ...cleanData,
+      };
+      await this.logAction(
+        `Admin Updated Profile of ${cleanData.displayName || cleanData.email || userId}`,
+        userId,
+        "Admin"
+      );
+      return inMemoryStore.userProfiles[idx];
+    }
+    return null;
+  },
+
   async getUserRole(userId: string, email?: string): Promise<"admin" | "user"> {
     const cleanEmail = (email || "").toLowerCase().trim();
     const adminEnv = (process.env.ADMIN_EMAILS || process.env.ADMIN_EMAIL || "")

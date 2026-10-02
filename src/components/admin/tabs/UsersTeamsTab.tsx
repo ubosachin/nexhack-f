@@ -15,6 +15,7 @@ import {
   GraduationCap,
   Sparkles,
   Loader2,
+  Pencil,
 } from "lucide-react";
 import { GitHubIcon, LinkedInIcon } from "@/components/ui/SocialIcons";
 import { DbTeam, DbUserProfile } from "@/lib/dbTypes";
@@ -25,6 +26,7 @@ interface UsersTeamsTabProps {
   onDeleteTeam: (id: string) => Promise<void>;
   onDeleteUser: (userId: string) => Promise<void>;
   onUpdateRole: (userId: string, role: "admin" | "user") => Promise<void>;
+  onEditUser: (user: DbUserProfile) => void;
 }
 
 export function UsersTeamsTab({
@@ -33,6 +35,7 @@ export function UsersTeamsTab({
   onDeleteTeam,
   onDeleteUser,
   onUpdateRole,
+  onEditUser,
 }: UsersTeamsTabProps) {
   const [subTab, setSubTab] = useState<"teams" | "users">("teams");
   const [searchQuery, setSearchQuery] = useState("");
@@ -376,18 +379,27 @@ export function UsersTeamsTab({
                       </td>
 
                       <td className="p-4 text-right">
-                        <button
-                          onClick={() => handleDeleteUser(user.userId, user.email)}
-                          disabled={deletingId === user.userId}
-                          className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
-                          title="Delete User Record"
-                        >
-                          {deletingId === user.userId ? (
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          ) : (
-                            <Trash2 className="w-3.5 h-3.5" />
-                          )}
-                        </button>
+                        <div className="flex items-center justify-end gap-1">
+                          <button
+                            onClick={() => onEditUser(user)}
+                            className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors cursor-pointer"
+                            title="Edit User Details & Role"
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteUser(user.userId, user.email)}
+                            disabled={deletingId === user.userId}
+                            className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                            title="Delete User Record"
+                          >
+                            {deletingId === user.userId ? (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                              <Trash2 className="w-3.5 h-3.5" />
+                            )}
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}

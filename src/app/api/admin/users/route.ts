@@ -13,15 +13,35 @@ export async function GET() {
 export async function PATCH(req: NextRequest) {
   try {
     const body = await req.json();
-    const { userId, role } = body;
-    if (!userId || !role || (role !== "admin" && role !== "user")) {
-      return NextResponse.json({ success: false, error: "Invalid userId or role" }, { status: 400 });
+    const { userId } = body;
+    if (!userId) {
+      return NextResponse.json({ success: false, error: "Missing userId" }, { status: 400 });
     }
-    const updated = await dbService.updateUserRole(userId, role);
-    return NextResponse.json({ success: updated });
+
+    // If only role is being toggled
+    const keys = Object.keys(body).filter((k) => k !== "userId");
+    if (keys.length === 1 && keys[0] === "role") {
+      const role = body.role;
+      if (role !== "admin" && role !== "user") {
+        return NextResponse.json({ success: false, error: "Invalid role" }, { status: 400 });
+      }
+      const updated = await dbService.updateUserRole(userId, role);
+      return NextResponse.json({ success: updated });
+    }
+
+    // Comprehensive profile update
+    const updatedUser = await dbService.updateUserProfileByAdmin(userId, body);
+    if (!updatedUser) {
+      return NextResponse.json({ success: false, error: "User not found or update failed" }, { status: 404 });
+    }
+    return NextResponse.json({ success: true, user: updatedUser });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
+}
+
+export async function PUT(req: NextRequest) {
+  return PATCH(req);
 }
 
 export async function DELETE(req: NextRequest) {

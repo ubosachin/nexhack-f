@@ -16,6 +16,7 @@ import { NewslettersTab } from "@/components/admin/tabs/NewslettersTab";
 import { AuditLogsTab } from "@/components/admin/tabs/AuditLogsTab";
 import { CreateHackathonModal } from "@/components/admin/modals/CreateHackathonModal";
 import { CreateEventModal } from "@/components/admin/modals/CreateEventModal";
+import { EditUserModal } from "@/components/admin/modals/EditUserModal";
 import {
   DbHackathon,
   DbEventSession,
@@ -40,6 +41,8 @@ export default function AdminPage() {
   const [isCreateHackathonOpen, setIsCreateHackathonOpen] = useState(false);
   const [editingHackathon, setEditingHackathon] = useState<DbHackathon | null>(null);
   const [isCreateEventOpen, setIsCreateEventOpen] = useState(false);
+  const [isEditUserOpen, setIsEditUserOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<DbUserProfile | null>(null);
 
   // Data states
   const [stats, setStats] = useState({
@@ -277,6 +280,22 @@ export default function AdminPage() {
     fetchData();
   };
 
+  const handleUpdateUserDetails = async (
+    userId: string,
+    data: Partial<DbUserProfile>
+  ) => {
+    const res = await fetch("/api/admin/users", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId, ...data }),
+    });
+    const json = await res.json();
+    if (!res.ok || !json.success) {
+      throw new Error(json.error || "Failed to update user details");
+    }
+    fetchData();
+  };
+
   // Registrations Actions
   const handleUpdateRegistrationStatus = async (
     id: string,
@@ -500,6 +519,10 @@ export default function AdminPage() {
               onDeleteTeam={handleDeleteTeam}
               onDeleteUser={handleDeleteUser}
               onUpdateRole={handleUpdateUserRole}
+              onEditUser={(u) => {
+                setEditingUser(u);
+                setIsEditUserOpen(true);
+              }}
             />
           )}
 
@@ -553,6 +576,16 @@ export default function AdminPage() {
         isOpen={isCreateEventOpen}
         onClose={() => setIsCreateEventOpen(false)}
         onSubmit={handleCreateEvent}
+      />
+
+      <EditUserModal
+        isOpen={isEditUserOpen}
+        user={editingUser}
+        onClose={() => {
+          setIsEditUserOpen(false);
+          setEditingUser(null);
+        }}
+        onSubmit={handleUpdateUserDetails}
       />
     </div>
   );
