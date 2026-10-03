@@ -34,6 +34,7 @@ export interface HackathonItem {
   registeredCount: number;
   tags: string[];
   bannerGradient: string;
+  bannerUrl?: string;
   tracks: { title: string; desc: string; icon: string }[];
   prizes: { place: string; reward: string; perks: string }[];
   eligibility: string;

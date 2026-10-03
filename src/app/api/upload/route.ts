@@ -1,19 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { uploadImageToCloudinary, isCloudinaryConfigured } from "@/lib/cloudinary";
+import { writeFile, mkdir } from "fs/promises";
+import path from "path";
 
 export async function POST(req: NextRequest) {
   try {
-    if (!isCloudinaryConfigured()) {
-      return NextResponse.json(
-        {
-          success: false,
-          error:
-            "Cloudinary is not configured. Please add CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET to your .env.local file.",
-        },
-        { status: 500 }
-      );
-    }
-
     const contentType = req.headers.get("content-type") || "";
 
     // 1. Multipart Form Data (file upload)
@@ -33,15 +24,34 @@ export async function POST(req: NextRequest) {
       const arrayBuffer = await file.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
 
-      const result = await uploadImageToCloudinary(buffer, { folder });
+      // If Cloudinary is configured, upload directly to Cloudinary
+      if (isCloudinaryConfigured()) {
+        const result = await uploadImageToCloudinary(buffer, { folder });
+        return NextResponse.json({
+          success: true,
+          storage: "cloudinary",
+          url: result.secure_url,
+          publicId: result.public_id,
+          width: result.width,
+          height: result.height,
+          format: result.format,
+        });
+      }
+
+      // Fallback: Store locally in public/uploads if Cloudinary credentials are not in .env yet
+      const uploadsDir = path.join(process.cwd(), "public", "uploads");
+      await mkdir(uploadsDir, { recursive: true });
+
+      const fileExt = file.name ? path.extname(file.name) || ".png" : ".png";
+      const cleanFileName = `banner-${Date.now()}-${Math.random().toString(36).substring(2, 8)}${fileExt}`;
+      const filePath = path.join(uploadsDir, cleanFileName);
+      await writeFile(filePath, buffer);
 
       return NextResponse.json({
         success: true,
-        url: result.secure_url,
-        publicId: result.public_id,
-        width: result.width,
-        height: result.height,
-        format: result.format,
+        storage: "local",
+        url: `/uploads/${cleanFileName}`,
+        message: "Stored in public/uploads. Add Cloudinary credentials to .env to upload directly to Cloudinary CDN.",
       });
     }
 
@@ -51,27 +61,65 @@ export async function POST(req: NextRequest) {
 
     if (!image) {
       return NextResponse.json(
-        { success: false, error: "No image (base64 or URL) provided in JSON body" },
+        { success: false, error: "No image provided in JSON body" },
         { status: 400 }
       );
     }
 
-    const result = await uploadImageToCloudinary(image, { folder });
+    if (isCloudinaryConfigured()) {
+      const result = await uploadImageToCloudinary(image, { folder });
+      return NextResponse.json({
+        success: true,
+        storage: "cloudinary",
+        url: result.secure_url,
+        publicId: result.public_id,
+        width: result.width,
+        height: result.height,
+        format: result.format,
+      });
+    }
+
+    // If remote URL is passed directly
+    if (typeof image === "string" && (image.startsWith("http://") || image.startsWith("https://"))) {
+      return NextResponse.json({
+        success: true,
+        storage: "remote",
+        url: image,
+      });
+    }
+
+    // If base64
+    if (typeof image === "string" && image.startsWith("data:image/")) {
+      const matches = image.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+      if (matches && matches.length === 3) {
+        const ext = matches[1].split("/")[1] || "png";
+        const imageBuffer = Buffer.from(matches[2], "base64");
+        const uploadsDir = path.join(process.cwd(), "public", "uploads");
+        await mkdir(uploadsDir, { recursive: true });
+
+        const cleanFileName = `banner-${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${ext}`;
+        const filePath = path.join(uploadsDir, cleanFileName);
+        await writeFile(filePath, imageBuffer);
+
+        return NextResponse.json({
+          success: true,
+          storage: "local",
+          url: `/uploads/${cleanFileName}`,
+        });
+      }
+    }
 
     return NextResponse.json({
       success: true,
-      url: result.secure_url,
-      publicId: result.public_id,
-      width: result.width,
-      height: result.height,
-      format: result.format,
+      storage: "direct",
+      url: image,
     });
   } catch (error: any) {
-    console.error("Cloudinary upload error:", error);
+    console.error("Upload error:", error);
     return NextResponse.json(
       {
         success: false,
-        error: error.message || "Failed to upload image to Cloudinary",
+        error: error.message || "Failed to upload image",
       },
       { status: 500 }
     );

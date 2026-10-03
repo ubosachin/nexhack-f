@@ -43,6 +43,13 @@ export const HackathonDetailModal: React.FC<HackathonDetailModalProps> = ({
         <div
           className={`p-6 rounded-2xl bg-gradient-to-r ${hackathon.bannerGradient} text-white shadow-md relative overflow-hidden`}
         >
+          {hackathon.bannerUrl && (
+            <img
+              src={hackathon.bannerUrl}
+              alt={hackathon.name}
+              className="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-60 pointer-events-none"
+            />
+          )}
           <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-white/10 transform skew-x-12 translate-x-10 pointer-events-none" />
 
           <div className="flex flex-wrap items-center gap-2 mb-3">

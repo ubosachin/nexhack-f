@@ -1,7 +1,17 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { X, Trophy, Plus, Trash2, Loader2, Sparkles } from "lucide-react";
+import {
+  X,
+  Trophy,
+  Plus,
+  Trash2,
+  Loader2,
+  Sparkles,
+  Palette,
+  Image as ImageIcon,
+  Eye,
+} from "lucide-react";
 import { DbHackathon } from "@/lib/dbTypes";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 
@@ -12,6 +22,39 @@ interface CreateHackathonModalProps {
   initialData?: DbHackathon | null;
 }
 
+const GRADIENT_PRESETS = [
+  {
+    name: "Blue & Cyan",
+    value: "from-blue-600 via-indigo-600 to-cyan-500",
+    preview: "bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500",
+  },
+  {
+    name: "Violet & Purple",
+    value: "from-violet-600 via-purple-600 to-indigo-600",
+    preview: "bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600",
+  },
+  {
+    name: "Teal & Emerald",
+    value: "from-cyan-600 via-teal-600 to-emerald-500",
+    preview: "bg-gradient-to-r from-cyan-600 via-teal-600 to-emerald-500",
+  },
+  {
+    name: "Rose & Amber",
+    value: "from-rose-600 via-pink-600 to-amber-500",
+    preview: "bg-gradient-to-r from-rose-600 via-pink-600 to-amber-500",
+  },
+  {
+    name: "Sunset Orange",
+    value: "from-orange-600 via-amber-600 to-yellow-500",
+    preview: "bg-gradient-to-r from-orange-600 via-amber-600 to-yellow-500",
+  },
+  {
+    name: "Midnight Cosmic",
+    value: "from-slate-900 via-indigo-950 to-slate-900",
+    preview: "bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900",
+  },
+];
+
 export function CreateHackathonModal({
   isOpen,
   onClose,
@@ -20,22 +63,22 @@ export function CreateHackathonModal({
 }: CreateHackathonModalProps) {
   const [formData, setFormData] = useState<Partial<DbHackathon>>({
     name: "",
-    edition: "3.0 Flagship",
-    tagline: "Build the next frontier of tech",
+    edition: "Campus Edition",
+    tagline: "Innovate, build & scale",
     description: "",
     status: "Upcoming",
     mode: "Hybrid",
-    location: "Bengaluru + Online Track",
-    dateRange: "Late 2026",
-    prizePool: "Cash Grants & Perks",
-    tags: ["AI & ML", "Web3", "Full Stack"],
+    location: "Online + Campus",
+    dateRange: "Announcing Soon",
+    prizePool: "Cash Grants & Swag",
+    tags: ["AI", "Web Dev"],
     bannerGradient: "from-blue-600 via-indigo-600 to-cyan-500",
+    bannerUrl: "",
     tracks: [
-      { title: "Artificial Intelligence & Agents", desc: "Build agent workflows and automation", icon: "Bot" },
-      { title: "Open Innovation", desc: "Any original software or product prototype", icon: "Lightbulb" },
+      { title: "Open Innovation", desc: "Build any original solution", icon: "Lightbulb" },
     ],
-    eligibility: "Open to all verified college and high school students.",
-    featured: true,
+    eligibility: "Open to all verified students.",
+    featured: false,
   });
 
   const [tagInput, setTagInput] = useState("");
@@ -44,7 +87,11 @@ export function CreateHackathonModal({
 
   useEffect(() => {
     if (initialData) {
-      setFormData(initialData);
+      setFormData({
+        ...initialData,
+        bannerUrl: initialData.bannerUrl || "",
+        bannerGradient: initialData.bannerGradient || "from-blue-600 via-indigo-600 to-cyan-500",
+      });
       setTagInput(initialData.tags?.join(", ") || "");
     } else {
       setFormData({
@@ -59,6 +106,7 @@ export function CreateHackathonModal({
         prizePool: "Cash Grants & Swag",
         tags: ["AI", "Web Dev"],
         bannerGradient: "from-blue-600 via-indigo-600 to-cyan-500",
+        bannerUrl: "",
         tracks: [
           { title: "Open Innovation", desc: "Build any original solution", icon: "Lightbulb" },
         ],
@@ -134,7 +182,7 @@ export function CreateHackathonModal({
                 {initialData ? "Edit Hackathon" : "Create New Hackathon"}
               </h2>
               <p className="text-xs text-slate-500">
-                Configure details, tracks, mode, and timeline
+                Configure details, banners, tracks, mode, and timeline
               </p>
             </div>
           </div>
@@ -147,68 +195,169 @@ export function CreateHackathonModal({
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-5 max-h-[75vh] overflow-y-auto">
+        <form onSubmit={handleSubmit} className="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
           {error && (
             <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs">
               {error}
             </div>
           )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Section 1: Basic Information */}
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Hackathon Name *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.name || ""}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="e.g. NEXHACK 3.0"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Edition Label
+                </label>
+                <input
+                  type="text"
+                  value={formData.edition || ""}
+                  onChange={(e) => setFormData({ ...formData, edition: e.target.value })}
+                  placeholder="e.g. Flagship Edition / Winter 2026"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10"
+                />
+              </div>
+            </div>
+
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                Hackathon Name *
+                Tagline
               </label>
               <input
                 type="text"
-                required
-                value={formData.name || ""}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="e.g. NEXHACK 3.0"
+                value={formData.tagline || ""}
+                onChange={(e) => setFormData({ ...formData, tagline: e.target.value })}
+                placeholder="e.g. Build the Next Frontier of Tech"
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10"
               />
             </div>
 
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                Edition Label
+                Description
               </label>
-              <input
-                type="text"
-                value={formData.edition || ""}
-                onChange={(e) => setFormData({ ...formData, edition: e.target.value })}
-                placeholder="e.g. Flagship Edition / Winter 2026"
+              <textarea
+                rows={3}
+                value={formData.description || ""}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                placeholder="Comprehensive summary of the hackathon theme, goals, and who should participate..."
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10"
               />
             </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-              Tagline
-            </label>
-            <input
-              type="text"
-              value={formData.tagline || ""}
-              onChange={(e) => setFormData({ ...formData, tagline: e.target.value })}
-              placeholder="e.g. Build the Next Frontier of Tech"
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10"
+          {/* Section 2: Banner Image & Visual Appearance */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-slate-50/90 border border-slate-200 space-y-4">
+            <div className="flex items-center gap-2">
+              <div className="p-2 rounded-lg bg-indigo-100 text-indigo-700">
+                <ImageIcon className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                  Hackathon Banner & Appearance
+                </h4>
+                <p className="text-[11px] text-slate-500">
+                  Upload a custom banner poster or choose a vibrant background gradient
+                </p>
+              </div>
+            </div>
+
+            {/* Banner Upload Component */}
+            <ImageUpload
+              value={formData.bannerUrl || ""}
+              onChange={(url) => setFormData({ ...formData, bannerUrl: url })}
+              folder="nexhack/banners"
+              label="Banner Poster Image (Cloudinary or Image URL)"
             />
+
+            {/* Gradient Preset Selector */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-2 flex items-center gap-1.5">
+                <Palette className="w-3.5 h-3.5 text-indigo-600" />
+                <span>Theme Gradient Accent</span>
+              </label>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                {GRADIENT_PRESETS.map((preset) => {
+                  const isSelected = formData.bannerGradient === preset.value;
+                  return (
+                    <button
+                      key={preset.value}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, bannerGradient: preset.value })}
+                      className={`p-2 rounded-xl border text-left flex items-center gap-2.5 transition-all cursor-pointer ${
+                        isSelected
+                          ? "bg-white border-indigo-600 ring-2 ring-indigo-500/20 shadow-xs"
+                          : "bg-white/80 border-slate-200 hover:border-slate-300"
+                      }`}
+                    >
+                      <span className={`w-5 h-5 rounded-lg shrink-0 ${preset.preview} shadow-2xs`} />
+                      <span className="text-[11px] font-semibold text-slate-700 truncate">
+                        {preset.name}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Live Banner Preview Card */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-2 flex items-center gap-1.5">
+                <Eye className="w-3.5 h-3.5 text-indigo-600" />
+                <span>Live Banner Card Preview</span>
+              </label>
+
+              <div
+                className={`rounded-2xl p-5 sm:p-6 bg-gradient-to-br ${
+                  formData.bannerGradient || "from-blue-600 via-indigo-600 to-cyan-500"
+                } text-white relative overflow-hidden shadow-sm`}
+              >
+                {/* Background image if provided */}
+                {formData.bannerUrl && (
+                  <img
+                    src={formData.bannerUrl}
+                    alt="Banner preview"
+                    className="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-60 pointer-events-none"
+                    onError={(e) => ((e.target as HTMLElement).style.display = "none")}
+                  />
+                )}
+
+                <div className="relative z-10">
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <span className="text-[10px] font-mono uppercase tracking-wider font-bold px-2 py-0.5 rounded-full bg-white/20 backdrop-blur-xs">
+                      {formData.edition || "Campus Edition"}
+                    </span>
+                    <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-amber-300 text-amber-950 shadow-2xs">
+                      {formData.status || "Upcoming"}
+                    </span>
+                  </div>
+
+                  <h3 className="text-xl sm:text-2xl font-black tracking-tight drop-shadow-xs">
+                    {formData.name || "NEXHACK 3.0"}
+                  </h3>
+                  <p className="text-xs text-white/90 italic mt-0.5">
+                    &ldquo;{formData.tagline || "Innovate, build & scale"}&rdquo;
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-              Description
-            </label>
-            <textarea
-              rows={3}
-              value={formData.description || ""}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Comprehensive summary of the hackathon theme, goals, and who should participate..."
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10"
-            />
-          </div>
-
+          {/* Section 3: Status, Mode, Prize Pool */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1.5">

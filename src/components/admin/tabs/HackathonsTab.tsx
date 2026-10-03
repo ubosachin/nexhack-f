@@ -106,13 +106,43 @@ export function HackathonsTab({
           {filtered.map((hackathon) => (
             <div
               key={hackathon.id}
-              className="rounded-2xl bg-white border border-slate-200 hover:border-slate-300 transition-all p-6 flex flex-col justify-between group shadow-xs hover:shadow-md"
+              className="rounded-2xl bg-white border border-slate-200 hover:border-slate-300 transition-all overflow-hidden flex flex-col justify-between group shadow-xs hover:shadow-md"
             >
-              <div>
-                {/* Header row */}
-                <div className="flex items-start justify-between gap-4 mb-3">
-                  <div>
-                    <div className="flex items-center gap-2">
+              {/* Mini Banner Header */}
+              <div
+                className={`h-16 bg-gradient-to-r ${
+                  hackathon.bannerGradient || "from-blue-600 via-indigo-600 to-cyan-500"
+                } relative overflow-hidden flex items-end p-3`}
+              >
+                {hackathon.bannerUrl && (
+                  <img
+                    src={hackathon.bannerUrl}
+                    alt={hackathon.name}
+                    className="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-60 pointer-events-none"
+                  />
+                )}
+                <div className="relative z-10 flex items-center justify-between w-full">
+                  <span className="text-[10px] font-bold text-white bg-black/30 backdrop-blur-xs px-2 py-0.5 rounded-md uppercase font-mono">
+                    {hackathon.edition || "Edition"}
+                  </span>
+                  {hackathon.bannerUrl ? (
+                    <span className="text-[10px] font-semibold text-white bg-emerald-600/80 backdrop-blur-xs px-2 py-0.5 rounded-md">
+                      Custom Banner
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-medium text-white/80 bg-black/25 backdrop-blur-xs px-2 py-0.5 rounded-md">
+                      Theme Gradient
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="p-6 flex-1 flex flex-col justify-between">
+                <div>
+                  {/* Header row */}
+                  <div className="flex items-start justify-between gap-4 mb-3">
+                    <div>
+                      <div className="flex items-center gap-2">
                       <span className="text-[11px] font-bold text-indigo-600 tracking-wider uppercase">
                         {hackathon.edition || "Flagship"}
                       </span>
@@ -227,6 +257,7 @@ export function HackathonsTab({
                 </div>
               </div>
             </div>
+          </div>
           ))}
         </div>
       )}

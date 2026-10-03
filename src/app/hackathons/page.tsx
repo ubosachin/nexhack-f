@@ -223,8 +223,15 @@ export default function HackathonsPage() {
                     className="rounded-3xl bg-white border border-slate-200 shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col overflow-hidden group hover:border-blue-300"
                   >
                     {/* Header Banner */}
-                    <div className={`p-6 sm:p-7 bg-gradient-to-br ${hackathon.bannerGradient} text-white relative`}>
-                      <div className="flex items-center justify-between gap-2 mb-3">
+                    <div className={`p-6 sm:p-7 bg-gradient-to-br ${hackathon.bannerGradient} text-white relative overflow-hidden`}>
+                      {hackathon.bannerUrl && (
+                        <img
+                          src={hackathon.bannerUrl}
+                          alt={hackathon.name}
+                          className="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-60 pointer-events-none"
+                        />
+                      )}
+                      <div className="flex items-center justify-between gap-2 mb-3 relative z-10">
                         <span className="text-[11px] font-mono uppercase tracking-wider font-bold px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-xs">
                           {hackathon.edition}
                         </span>

@@ -113,9 +113,16 @@ export const HackathonsSection: React.FC<HackathonsSectionProps> = ({
               >
                 {/* Header Banner */}
                 <div
-                  className={`p-4 sm:p-5 bg-gradient-to-r ${hackathon.bannerGradient} text-white relative`}
+                  className={`p-4 sm:p-5 bg-gradient-to-r ${hackathon.bannerGradient} text-white relative overflow-hidden`}
                 >
-                  <div className="flex items-center justify-between mb-2 sm:mb-3">
+                  {hackathon.bannerUrl && (
+                    <img
+                      src={hackathon.bannerUrl}
+                      alt={hackathon.name}
+                      className="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-60 pointer-events-none"
+                    />
+                  )}
+                  <div className="flex items-center justify-between mb-2 sm:mb-3 relative z-10">
                     <span className="px-2.5 py-0.5 sm:py-1 bg-white/20 backdrop-blur-md rounded-lg text-[10px] font-bold tracking-wider uppercase">
                       {hackathon.edition}
                     </span>

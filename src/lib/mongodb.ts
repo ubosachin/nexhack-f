@@ -332,6 +332,7 @@ export const dbService = {
       registeredCount: 0,
       tags: hackathon.tags || ["AI", "Web Dev"],
       bannerGradient: hackathon.bannerGradient || "from-blue-600 via-indigo-600 to-cyan-500",
+      bannerUrl: hackathon.bannerUrl || undefined,
       tracks: hackathon.tracks || [{ title: "Open Track", desc: "Build whatever you want", icon: "Lightbulb" }],
       prizes: hackathon.prizes || [{ place: "Winner", reward: "Prize Grant", perks: "Winner Certificate" }],
       eligibility: hackathon.eligibility || "Open to all students",
