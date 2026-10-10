@@ -10,6 +10,15 @@
     "set-admin": "node scripts/set-admin.mjs"
   },
   "dependencies": {
+    "@tiptap/extension-bullet-list": "2.11.7",
+    "@tiptap/extension-list-item": "2.11.7",
+    "@tiptap/extension-ordered-list": "2.11.7",
+    "@tiptap/extension-placeholder": "2.11.7",
+    "@tiptap/extension-text-align": "2.11.7",
+    "@tiptap/extension-underline": "2.11.7",
+    "@tiptap/pm": "2.11.7",
+    "@tiptap/react": "2.11.7",
+    "@tiptap/starter-kit": "2.11.7",
     "canvas-confetti": "^1.9.4",
     "cloudinary": "^2.11.0",
     "framer-motion": "^13.4.4",
