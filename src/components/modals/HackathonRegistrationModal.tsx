@@ -27,7 +27,7 @@ type Step =
 
 interface Props {
   isOpen: boolean;
-  onClose: () => void;
+  onClose: (didRegister?: boolean) => void;
   hackathon: DbHackathon | null;
 }
 
@@ -264,7 +264,7 @@ export function HackathonRegistrationModal({ isOpen, onClose, hackathon }: Props
               </p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer shrink-0">
+          <button onClick={() => onClose(false)} className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer shrink-0">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -564,7 +564,7 @@ export function HackathonRegistrationModal({ isOpen, onClose, hackathon }: Props
         {step === "success" && (
           <div className="px-5 py-4 border-t border-slate-100 bg-white shrink-0">
             <button
-              onClick={onClose}
+              onClick={() => onClose(true)}
               className={`w-full py-2.5 rounded-xl text-white font-bold text-sm bg-gradient-to-r ${grad} shadow-sm cursor-pointer`}
             >
               Done

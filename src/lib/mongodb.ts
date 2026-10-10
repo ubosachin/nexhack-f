@@ -392,13 +392,17 @@ export const dbService = {
     const { db, isUsingMongo } = await connectToDatabase();
     if (isUsingMongo && db) {
       const res = await db.collection("hackathons").deleteOne({ id });
-      await this.logAction("Deleted Hackathon", id, "Admin");
+      // Cascade: remove all registrations linked to this hackathon
+      await db.collection("registrations").deleteMany({ hackathonId: id });
+      await this.logAction("Deleted Hackathon + Registrations", id, "Admin");
       return res.deletedCount > 0;
     }
     const idx = inMemoryStore.hackathons.findIndex((h) => h.id === id);
     if (idx !== -1) {
       inMemoryStore.hackathons.splice(idx, 1);
-      await this.logAction("Deleted Hackathon", id, "Admin");
+      // Cascade in-memory
+      inMemoryStore.registrations = inMemoryStore.registrations.filter((r) => r.hackathonId !== id);
+      await this.logAction("Deleted Hackathon + Registrations", id, "Admin");
       return true;
     }
     return false;

@@ -19,19 +19,14 @@ import {
   Code2,
   ArrowRight,
   Search,
-  Filter,
-  Calendar,
   MapPin,
-  ExternalLink,
-  Sparkles,
-  ChevronDown,
+  Clock,
   Terminal,
   Lightbulb,
   Layers,
   Presentation,
-  CheckCircle2,
-  Rocket,
-  Flame,
+  CalendarCheck,
+  CalendarX,
 } from "lucide-react";
 
 export default function HackathonsPage() {
@@ -211,40 +206,51 @@ export default function HackathonsPage() {
                     key={hackathon.id}
                     className="rounded-3xl bg-white border border-slate-200 shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col overflow-hidden group hover:border-blue-300"
                   >
-                    {/* Header Banner */}
-                    <div className={`p-6 sm:p-7 bg-gradient-to-br ${hackathon.bannerGradient} text-white relative overflow-hidden`}>
-                      {hackathon.bannerUrl && (
+                    {/* Banner — image fills with correct aspect ratio */}
+                    <div className="relative w-full overflow-hidden bg-slate-100" style={{ aspectRatio: "16/7" }}>
+                      {hackathon.bannerUrl ? (
                         <img
                           src={hackathon.bannerUrl}
                           alt={hackathon.name}
-                          className="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-60 pointer-events-none"
+                          className="w-full h-full object-cover object-center"
                         />
+                      ) : (
+                        <div className={`w-full h-full bg-gradient-to-br ${hackathon.bannerGradient} flex items-end p-4`}>
+                          <div>
+                            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-white/80 bg-black/20 px-2 py-0.5 rounded-full">
+                              {hackathon.edition}
+                            </span>
+                            <h3 className="text-xl font-black text-white mt-1">{hackathon.name}</h3>
+                          </div>
+                        </div>
                       )}
-                      <div className="flex items-center justify-between gap-2 mb-3 relative z-10">
-                        <span className="text-[11px] font-mono uppercase tracking-wider font-bold px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-xs">
-                          {hackathon.edition}
-                        </span>
-                        <span
-                          className={`text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-full shadow-xs ${
-                            hackathon.status === "Ongoing"
-                              ? "bg-emerald-400 text-emerald-950 animate-pulse"
-                              : hackathon.status === "Upcoming"
-                              ? "bg-amber-300 text-amber-950"
-                              : "bg-white/30 text-white"
-                          }`}
-                        >
+                      {/* Gradient accent strip at bottom */}
+                      <div className={`absolute bottom-0 left-0 right-0 h-[3px] bg-gradient-to-r ${hackathon.bannerGradient}`} />
+                      {/* Status badge */}
+                      <div className="absolute top-2.5 right-2.5">
+                        <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full shadow-sm ${
+                          hackathon.status === "Ongoing" ? "bg-emerald-400 text-emerald-950 animate-pulse" :
+                          hackathon.status === "Upcoming" ? "bg-amber-300 text-amber-950" :
+                          "bg-white/80 text-slate-700"
+                        }`}>
                           {hackathon.status}
                         </span>
                       </div>
+                    </div>
 
-                      <h3 className="text-2xl font-black tracking-tight">{hackathon.name}</h3>
-                      <p className="text-xs text-white/90 mt-1 font-medium italic">
-                        &ldquo;{hackathon.tagline}&rdquo;
-                      </p>
+                    {/* Name / tagline row — always below banner */}
+                    <div className={`px-5 pt-4 pb-1`}>
+                      <div className={`inline-block text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-gradient-to-r ${hackathon.bannerGradient} text-white mb-1.5`}>
+                        {hackathon.edition}
+                      </div>
+                      <h3 className="text-lg font-black text-slate-900 leading-tight">{hackathon.name}</h3>
+                      {hackathon.tagline && (
+                        <p className="text-[11px] text-slate-400 italic mt-0.5 line-clamp-1">&ldquo;{hackathon.tagline}&rdquo;</p>
+                      )}
                     </div>
 
                     {/* Body */}
-                    <div className="p-6 flex-1 flex flex-col justify-between space-y-6">
+                    <div className="p-5 flex-1 flex flex-col justify-between space-y-5">
                       <div className="space-y-4">
                         <p className="text-xs sm:text-sm text-slate-600 leading-relaxed line-clamp-3">
                           {hackathon.description.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim() || "No description available."}
@@ -252,40 +258,77 @@ export default function HackathonsPage() {
 
                         {/* Metadata Rows */}
                         <div className="space-y-2 pt-2 border-t border-slate-100 text-xs text-slate-600">
+                          {/* Registration dates — shown when available */}
+                          {hackathon.registrationStartDate || hackathon.registrationEndDate ? (
+                            <>
+                              {hackathon.registrationStartDate && (
+                                <div className="flex items-center gap-2">
+                                  <CalendarCheck className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                                  <span>Opens: <span className="font-semibold text-slate-700">{new Date(hackathon.registrationStartDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</span></span>
+                                </div>
+                              )}
+                              {hackathon.registrationEndDate && (
+                                <div className="flex items-center gap-2">
+                                  <CalendarX className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+                                  <span>Closes: <span className="font-semibold text-slate-700">{new Date(hackathon.registrationEndDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</span></span>
+                                </div>
+                              )}
+                            </>
+                          ) : (
+                            /* No reg dates — just show mode */
+                            <div className="flex items-center gap-2 text-slate-500">
+                              <span className="w-2 h-2 rounded-full bg-slate-300" />
+                              {hackathon.mode} hackathon
+                            </div>
+                          )}
+
+                          {/* Location — only for non-online */}
+                          {hackathon.mode !== "Online" && hackathon.location && (
+                            <div className="flex items-center gap-2">
+                              <MapPin className="w-3.5 h-3.5 text-purple-500 shrink-0" />
+                              <span className="truncate">{hackathon.location}</span>
+                            </div>
+                          )}
+
                           <div className="flex items-center gap-2">
-                            <Calendar className="w-4 h-4 text-blue-600 shrink-0" />
-                            <span>{hackathon.dateRange}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <MapPin className="w-4 h-4 text-purple-600 shrink-0" />
-                            <span>{hackathon.location} ({hackathon.mode})</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Trophy className="w-4 h-4 text-amber-600 shrink-0" />
+                            <Trophy className="w-3.5 h-3.5 text-amber-500 shrink-0" />
                             <span className="font-semibold text-slate-900">{hackathon.prizePool}</span>
                           </div>
                         </div>
 
-                        {/* Tracks Preview */}
+                        {/* Registration status badge */}
                         <div>
-                          <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider block mb-2">
-                            CHALLENGE TRACKS
-                          </span>
-                          <div className="flex flex-wrap gap-1.5">
-                            {hackathon.tracks.map((track, i) => (
-                              <span
-                                key={i}
-                                className="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 text-[11px] font-medium"
-                              >
-                                {track.title}
+                          {(() => {
+                            const now = new Date();
+                            const start = hackathon.registrationStartDate ? new Date(hackathon.registrationStartDate) : null;
+                            const end = hackathon.registrationEndDate ? new Date(hackathon.registrationEndDate) : null;
+                            if (hackathon.status === "Completed") return (
+                              <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200">
+                                Event Completed
                               </span>
-                            ))}
-                          </div>
+                            );
+                            if (start && now < start) return (
+                              <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+                                <Clock className="w-3 h-3" /> Registration Upcoming
+                              </span>
+                            );
+                            if (end && now > end) return (
+                              <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-50 text-rose-600 border border-rose-200">
+                                Registration Closed
+                              </span>
+                            );
+                            return (
+                              <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                Registration Open
+                              </span>
+                            );
+                          })()}
                         </div>
                       </div>
 
                       {/* Action Buttons */}
-                      <div className="pt-4 border-t border-slate-100 flex items-center gap-3">
+                      <div className="pt-3 border-t border-slate-100 flex items-center gap-3">
                         <button
                           onClick={() => handleView(hackathon)}
                           className="flex-1 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs transition-all cursor-pointer"
@@ -295,7 +338,7 @@ export default function HackathonsPage() {
                         {hackathon.status !== "Completed" ? (
                           <button
                             onClick={() => handleRegister(hackathon)}
-                            className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                            className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-sm transition-all cursor-pointer flex items-center justify-center gap-1.5"
                           >
                             <span>Register</span>
                             <ArrowRight className="w-3.5 h-3.5" />
