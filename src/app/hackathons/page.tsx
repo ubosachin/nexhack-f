@@ -2,16 +2,16 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-import { HackathonDetailModal } from "@/components/modals/HackathonDetailModal";
-import { JoinCommunityModal } from "@/components/modals/JoinCommunityModal";
+import { HackathonRegistrationModal } from "@/components/modals/HackathonRegistrationModal";
 import { LegalModal } from "@/components/modals/LegalModal";
 import {
   HACKATHON_EVALUATION_CRITERIA,
   HACKATHON_RULES,
-  HackathonItem,
 } from "@/data/nexhackData";
+import type { DbHackathon } from "@/lib/dbTypes";
 import {
   Trophy,
   ShieldCheck,
@@ -35,11 +35,10 @@ import {
 } from "lucide-react";
 
 export default function HackathonsPage() {
-  const [hackathonsList, setHackathonsList] = useState<HackathonItem[]>([]);
+  const router = useRouter();
+  const [hackathonsList, setHackathonsList] = useState<DbHackathon[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedHackathon, setSelectedHackathon] = useState<HackathonItem | null>(null);
-  const [isJoinOpen, setIsJoinOpen] = useState(false);
-  const [registeredEvent, setRegisteredEvent] = useState("");
+  const [registerHackathon, setRegisterHackathon] = useState<DbHackathon | null>(null);
   const [activeTab, setActiveTab] = useState<"All" | "Upcoming" | "Completed">("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedMode, setSelectedMode] = useState<string>("All");
@@ -64,35 +63,25 @@ export default function HackathonsPage() {
     loadHackathons();
   }, []);
 
-  const handleView = (hackathon: HackathonItem) => {
-    setSelectedHackathon(hackathon);
+  const handleView = (hackathon: DbHackathon) => {
+    router.push(`/hackathons/${hackathon.id}`);
   };
 
-  const handleRegister = (name: string) => {
-    setRegisteredEvent(name);
-    setIsJoinOpen(true);
+  const handleRegister = (hackathon: DbHackathon) => {
+    setRegisterHackathon(hackathon);
   };
 
   // Filtered hackathons from MongoDB data
   const filteredHackathons = useMemo(() => {
     return hackathonsList.filter((item) => {
-      // Tab filter
-      if (activeTab !== "All" && item.status !== activeTab) {
-        return false;
-      }
-      // Mode filter
-      if (selectedMode !== "All" && item.mode !== selectedMode) {
-        return false;
-      }
-      // Search query
+      if (activeTab !== "All" && item.status !== activeTab) return false;
+      if (selectedMode !== "All" && item.mode !== selectedMode) return false;
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const matchesName = item.name.toLowerCase().includes(q);
         const matchesDesc = item.description?.toLowerCase().includes(q);
         const matchesTags = item.tags?.some((t) => t.toLowerCase().includes(q));
-        if (!matchesName && !matchesDesc && !matchesTags) {
-          return false;
-        }
+        if (!matchesName && !matchesDesc && !matchesTags) return false;
       }
       return true;
     });
@@ -100,7 +89,7 @@ export default function HackathonsPage() {
 
   return (
     <div className="min-h-screen bg-white text-[#0A0F1D] flex flex-col selection:bg-blue-600 selection:text-white">
-      <Navbar onJoinClick={() => handleRegister("")} />
+      <Navbar onJoinClick={() => {}} />
 
       <main className="flex-1 pt-20 sm:pt-24">
         {/* 1. HERO HEADER */}
@@ -258,7 +247,7 @@ export default function HackathonsPage() {
                     <div className="p-6 flex-1 flex flex-col justify-between space-y-6">
                       <div className="space-y-4">
                         <p className="text-xs sm:text-sm text-slate-600 leading-relaxed line-clamp-3">
-                          {hackathon.description}
+                          {hackathon.description.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim() || "No description available."}
                         </p>
 
                         {/* Metadata Rows */}
@@ -305,7 +294,7 @@ export default function HackathonsPage() {
                         </button>
                         {hackathon.status !== "Completed" ? (
                           <button
-                            onClick={() => handleRegister(hackathon.name)}
+                            onClick={() => handleRegister(hackathon)}
                             className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md transition-all cursor-pointer flex items-center justify-center gap-1.5"
                           >
                             <span>Register</span>
@@ -435,7 +424,7 @@ export default function HackathonsPage() {
                   Bring NEXHACK to Campus
                 </Link>
                 <button
-                  onClick={() => handleRegister("")}
+                  onClick={() => {}}
                   className="w-full sm:w-auto px-6 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs border border-slate-700 transition-all cursor-pointer text-center"
                 >
                   Register as Hacker
@@ -446,20 +435,13 @@ export default function HackathonsPage() {
         </section>
       </main>
 
-      <Footer onOpenLegal={(type) => setLegalModalType(type)} onJoinClick={() => handleRegister("")} />
+      <Footer onOpenLegal={(type) => setLegalModalType(type)} onJoinClick={() => {}} />
 
       {/* Modals */}
-      <HackathonDetailModal
-        isOpen={!!selectedHackathon}
-        onClose={() => setSelectedHackathon(null)}
-        hackathon={selectedHackathon}
-        onRegisterClick={(name) => handleRegister(name)}
-      />
-
-      <JoinCommunityModal
-        isOpen={isJoinOpen}
-        onClose={() => setIsJoinOpen(false)}
-        defaultEvent={registeredEvent}
+      <HackathonRegistrationModal
+        isOpen={!!registerHackathon}
+        onClose={() => setRegisterHackathon(null)}
+        hackathon={registerHackathon}
       />
 
       <LegalModal

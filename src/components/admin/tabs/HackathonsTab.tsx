@@ -182,7 +182,7 @@ export function HackathonsTab({
                 </p>
 
                 <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed mb-4">
-                  {hackathon.description}
+                  {hackathon.description.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim()}
                 </p>
 
                 {/* Key metadata chips */}
@@ -205,6 +205,33 @@ export function HackathonsTab({
                   </div>
                 </div>
 
+                {/* Registration window dates */}
+                {(hackathon.registrationStartDate || hackathon.registrationEndDate) && (
+                  <div className="space-y-1.5 mb-4 p-2.5 rounded-xl bg-indigo-50/60 border border-indigo-100 text-xs">
+                    <div className="font-semibold text-indigo-800 text-[10px] uppercase tracking-wider mb-1">
+                      Registration Window
+                    </div>
+                    {hackathon.registrationStartDate && (
+                      <div className="flex items-center gap-1.5 text-indigo-700">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                        <span className="truncate">Opens: {new Date(hackathon.registrationStartDate).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}</span>
+                      </div>
+                    )}
+                    {hackathon.registrationEndDate && (
+                      <div className="flex items-center gap-1.5 text-indigo-700">
+                        <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0" />
+                        <span className="truncate">Closes: {new Date(hackathon.registrationEndDate).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}</span>
+                      </div>
+                    )}
+                    {hackathon.minTeamSize !== undefined && hackathon.maxTeamSize !== undefined && (
+                      <div className="flex items-center gap-1.5 text-indigo-700">
+                        <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
+                        <span>Team: {hackathon.minTeamSize}–{hackathon.maxTeamSize} members</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* Tags */}
                 {hackathon.tags && hackathon.tags.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 mb-4">
@@ -223,12 +250,12 @@ export function HackathonsTab({
               {/* Bottom Actions */}
               <div className="pt-4 border-t border-slate-100 flex items-center justify-between gap-2">
                 <Link
-                  href="/hackathons"
+                  href={`/hackathons/${hackathon.id}`}
                   target="_blank"
                   className="text-xs text-slate-500 hover:text-slate-800 flex items-center gap-1.5 transition-colors"
                 >
                   <ExternalLink className="w-3.5 h-3.5" />
-                  <span>Public Page</span>
+                  <span>View Page</span>
                 </Link>
 
                 <div className="flex items-center gap-2">

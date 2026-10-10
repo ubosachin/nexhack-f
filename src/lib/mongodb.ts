@@ -317,6 +317,15 @@ export const dbService = {
     return [...inMemoryStore.hackathons];
   },
 
+  async getHackathon(id: string): Promise<DbHackathon | null> {
+    const { db, isUsingMongo } = await connectToDatabase();
+    if (isUsingMongo && db) {
+      const doc = await db.collection("hackathons").findOne({ id });
+      return doc as unknown as DbHackathon | null;
+    }
+    return inMemoryStore.hackathons.find((h) => h.id === id) ?? null;
+  },
+
   async addHackathon(hackathon: Partial<DbHackathon>): Promise<DbHackathon> {
     const newDoc: DbHackathon = {
       id: `nexhack-${Date.now()}`,
@@ -328,14 +337,20 @@ export const dbService = {
       mode: hackathon.mode || "Hybrid",
       location: hackathon.location || "Online",
       dateRange: hackathon.dateRange || "Coming Soon",
+      registrationStartDate: hackathon.registrationStartDate || undefined,
+      registrationEndDate: hackathon.registrationEndDate || undefined,
       prizePool: hackathon.prizePool || "Grants & Swag",
       registeredCount: 0,
       tags: hackathon.tags || ["AI", "Web Dev"],
       bannerGradient: hackathon.bannerGradient || "from-blue-600 via-indigo-600 to-cyan-500",
       bannerUrl: hackathon.bannerUrl || undefined,
+      mobileBannerUrl: hackathon.mobileBannerUrl || undefined,
       tracks: hackathon.tracks || [{ title: "Open Track", desc: "Build whatever you want", icon: "Lightbulb" }],
       prizes: hackathon.prizes || [{ place: "Winner", reward: "Prize Grant", perks: "Winner Certificate" }],
       eligibility: hackathon.eligibility || "Open to all students",
+      minTeamSize: hackathon.minTeamSize ?? 1,
+      maxTeamSize: hackathon.maxTeamSize ?? 4,
+      featured: hackathon.featured || false,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -468,8 +483,13 @@ export const dbService = {
       collegeOrSchool: reg.collegeOrSchool || "College",
       degreeOrGrade: reg.degreeOrGrade || "",
       eventOrHackathon: reg.eventOrHackathon || "General Community",
+      hackathonId: reg.hackathonId || undefined,
+      registrationType: reg.registrationType || "individual",
       role: reg.role || "Hacker / Participant",
-      teamName: reg.teamName || "Solo",
+      teamId: reg.teamId || undefined,
+      teamName: reg.teamName || undefined,
+      participatingMemberIds: reg.participatingMemberIds || undefined,
+      userId: reg.userId || undefined,
       githubUrl: reg.githubUrl || "",
       linkedinUrl: reg.linkedinUrl || "",
       status: "Confirmed",
@@ -484,6 +504,75 @@ export const dbService = {
     }
     await this.logAction("New Registration", `${newDoc.fullName} (${newDoc.eventOrHackathon})`, "Public");
     return newDoc;
+  },
+
+  /** Check if a user (by email or userId) is already registered for a hackathon */
+  async checkExistingRegistration(
+    hackathonId: string,
+    email?: string,
+    userId?: string
+  ): Promise<DbRegistration | null> {
+    const { db, isUsingMongo } = await connectToDatabase();
+    const orClauses: Record<string, unknown>[] = [];
+    if (email) orClauses.push({ email: email.toLowerCase().trim() });
+    if (userId) orClauses.push({ userId });
+    if (orClauses.length === 0) return null;
+
+    if (isUsingMongo && db) {
+      const doc = await db.collection("registrations").findOne({
+        hackathonId,
+        $or: orClauses,
+        status: { $ne: "Cancelled" },
+      });
+      return doc as unknown as DbRegistration | null;
+    }
+    return (
+      inMemoryStore.registrations.find(
+        (r) =>
+          r.hackathonId === hackathonId &&
+          r.status !== "Cancelled" &&
+          ((email && r.email.toLowerCase() === email.toLowerCase()) ||
+            (userId && r.userId === userId))
+      ) ?? null
+    );
+  },
+
+  /** Check if a team is already registered for a hackathon */
+  async checkExistingTeamRegistration(
+    hackathonId: string,
+    teamId: string
+  ): Promise<DbRegistration | null> {
+    const { db, isUsingMongo } = await connectToDatabase();
+    if (isUsingMongo && db) {
+      const doc = await db.collection("registrations").findOne({
+        hackathonId,
+        teamId,
+        status: { $ne: "Cancelled" },
+      });
+      return doc as unknown as DbRegistration | null;
+    }
+    return (
+      inMemoryStore.registrations.find(
+        (r) =>
+          r.hackathonId === hackathonId &&
+          r.teamId === teamId &&
+          r.status !== "Cancelled"
+      ) ?? null
+    );
+  },
+
+  /** Increment the registeredCount for a hackathon */
+  async incrementRegisteredCount(hackathonId: string): Promise<void> {
+    const { db, isUsingMongo } = await connectToDatabase();
+    if (isUsingMongo && db) {
+      await db.collection("hackathons").updateOne(
+        { id: hackathonId },
+        { $inc: { registeredCount: 1 }, $set: { updatedAt: new Date().toISOString() } }
+      );
+    } else {
+      const h = inMemoryStore.hackathons.find((h) => h.id === hackathonId);
+      if (h) h.registeredCount = (h.registeredCount || 0) + 1;
+    }
   },
 
   async updateRegistrationStatus(id: string, status: DbRegistration["status"]): Promise<boolean> {

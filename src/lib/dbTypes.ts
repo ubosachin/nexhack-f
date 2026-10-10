@@ -4,19 +4,28 @@ export interface DbHackathon {
   name: string;
   edition: string;
   tagline: string;
-  description: string;
+  description: string;       // stored as HTML (rich text)
   status: "Upcoming" | "Ongoing" | "Completed";
   mode: "Online" | "In-Person" | "Hybrid";
   location: string;
   dateRange: string;
+  /** ISO datetime string for when registration opens */
+  registrationStartDate?: string;
+  /** ISO datetime string for when registration closes */
+  registrationEndDate?: string;
   prizePool: string;
   registeredCount: number;
   tags: string[];
   bannerGradient: string;
-  bannerUrl?: string;
+  bannerUrl?: string;        // Desktop / default banner
+  mobileBannerUrl?: string;  // Mobile-specific banner (optional)
   tracks: { title: string; desc: string; icon: string }[];
   prizes: { place: string; reward: string; perks: string }[];
   eligibility: string;
+  /** Minimum team size (1 = individuals allowed) */
+  minTeamSize?: number;
+  /** Maximum team size */
+  maxTeamSize?: number;
   featured?: boolean;
   createdAt: string;
   updatedAt: string;
@@ -55,8 +64,17 @@ export interface DbRegistration {
   collegeOrSchool: string;
   degreeOrGrade?: string;
   eventOrHackathon: string;
+  /** Foreign key to DbHackathon.id (set when registering for a specific hackathon) */
+  hackathonId?: string;
+  /** "individual" | "team" — how the participant is registering */
+  registrationType?: "individual" | "team";
   role: "Hacker / Participant" | "Volunteer / Organizer" | "Campus Ambassador" | "Mentor / Speaker";
+  teamId?: string;
   teamName?: string;
+  /** userIds of participating team members (for team registrations) */
+  participatingMemberIds?: string[];
+  /** userId of the person who completed registration */
+  userId?: string;
   githubUrl?: string;
   linkedinUrl?: string;
   status: "Confirmed" | "Waitlisted" | "Approved" | "Cancelled";

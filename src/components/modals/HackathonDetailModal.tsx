@@ -73,7 +73,7 @@ export const HackathonDetailModal: React.FC<HackathonDetailModalProps> = ({
           </div>
 
           <h3 className="text-2xl font-black">{hackathon.name}</h3>
-          <p className="text-white/90 text-sm mt-1 max-w-xl">{hackathon.description}</p>
+          <p className="text-white/90 text-sm mt-1 max-w-xl">{(hackathon.description || "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 200)}{(hackathon.description || "").length > 200 ? "…" : ""}</p>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5 pt-4 border-t border-white/20 text-xs">
             <div>

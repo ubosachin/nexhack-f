@@ -34,6 +34,21 @@ export async function PUT(req: NextRequest) {
   }
 }
 
+export async function PATCH(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { id, ...updates } = body;
+    if (!id) {
+      return NextResponse.json({ success: false, error: "Missing hackathon id" }, { status: 400 });
+    }
+    // PATCH is used for partial updates like status changes
+    const updated = await dbService.updateHackathon(id, updates);
+    return NextResponse.json({ success: updated });
+  } catch (error: any) {
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  }
+}
+
 export async function DELETE(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
