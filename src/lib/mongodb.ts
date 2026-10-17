@@ -478,6 +478,20 @@ export const dbService = {
     return [...inMemoryStore.registrations];
   },
 
+  /** Get registrations filtered to a specific hackathon */
+  async getRegistrationsByHackathon(hackathonId: string): Promise<DbRegistration[]> {
+    const { db, isUsingMongo } = await connectToDatabase();
+    if (isUsingMongo && db) {
+      const list = await db
+        .collection("registrations")
+        .find({ hackathonId })
+        .sort({ createdAt: -1 })
+        .toArray();
+      return list as unknown as DbRegistration[];
+    }
+    return inMemoryStore.registrations.filter((r) => r.hackathonId === hackathonId);
+  },
+
   async addRegistration(reg: Partial<DbRegistration>): Promise<DbRegistration> {
     const newDoc: DbRegistration = {
       id: `reg-${Date.now()}`,

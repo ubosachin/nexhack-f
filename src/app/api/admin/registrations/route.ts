@@ -1,9 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { dbService } from "@/lib/mongodb";
 
-export async function GET() {
+/**
+ * GET /api/admin/registrations
+ * GET /api/admin/registrations?hackathonId=<id>
+ *
+ * Returns all registrations, or those for a specific hackathon if
+ * hackathonId query param is provided.
+ */
+export async function GET(req: NextRequest) {
   try {
-    const registrations = await dbService.getRegistrations();
+    const { searchParams } = new URL(req.url);
+    const hackathonId = searchParams.get("hackathonId");
+
+    const registrations = hackathonId
+      ? await dbService.getRegistrationsByHackathon(hackathonId)
+      : await dbService.getRegistrations();
+
     return NextResponse.json({ success: true, registrations });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
@@ -37,4 +50,3 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
-

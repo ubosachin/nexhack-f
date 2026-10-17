@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { HackathonRegistrationModal } from "@/components/modals/HackathonRegistrationModal";
@@ -27,19 +28,23 @@ import {
   Presentation,
   CalendarCheck,
   CalendarX,
+  BadgeCheck,
 } from "lucide-react";
 
 export default function HackathonsPage() {
   const router = useRouter();
+  const { data: session } = useSession();
   const [hackathonsList, setHackathonsList] = useState<DbHackathon[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [registerHackathon, setRegisterHackathon] = useState<DbHackathon | null>(null);
+  // Set of hackathonIds the current user has already registered for
+  const [registeredIds, setRegisteredIds] = useState<Set<string>>(new Set());
   const [activeTab, setActiveTab] = useState<"All" | "Upcoming" | "Completed">("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedMode, setSelectedMode] = useState<string>("All");
   const [legalModalType, setLegalModalType] = useState<"privacy" | "terms" | "code_of_conduct" | null>(null);
 
-  // Fetch real hackathons directly from MongoDB API
+  // Fetch hackathons
   useEffect(() => {
     async function loadHackathons() {
       try {
@@ -57,6 +62,26 @@ export default function HackathonsPage() {
     }
     loadHackathons();
   }, []);
+
+  // Fetch user's registered hackathon IDs once session is ready
+  useEffect(() => {
+    if (!session?.user) return;
+    fetch("/api/user/registrations")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.registrations)) {
+          const ids = new Set<string>(
+            data.registrations
+              .filter((r: { hackathonId?: string; status: string }) =>
+                r.hackathonId && r.status !== "Cancelled"
+              )
+              .map((r: { hackathonId: string }) => r.hackathonId)
+          );
+          setRegisteredIds(ids);
+        }
+      })
+      .catch(() => {/* silent */});
+  }, [session?.user]);
 
   const handleView = (hackathon: DbHackathon) => {
     router.push(`/hackathons/${hackathon.id}`);
@@ -335,20 +360,25 @@ export default function HackathonsPage() {
                         >
                           View Details
                         </button>
-                        {hackathon.status !== "Completed" ? (
+                        {hackathon.status === "Completed" ? (
+                          <button
+                            onClick={() => handleView(hackathon)}
+                            className="flex-1 py-2.5 rounded-xl bg-slate-200 text-slate-600 font-bold text-xs cursor-pointer"
+                          >
+                            View Archive
+                          </button>
+                        ) : registeredIds.has(hackathon.id) ? (
+                          <div className="flex-1 py-2.5 rounded-xl bg-emerald-50 border-2 border-emerald-300 text-emerald-700 font-bold text-xs flex items-center justify-center gap-1.5">
+                            <BadgeCheck className="w-3.5 h-3.5" />
+                            Registered
+                          </div>
+                        ) : (
                           <button
                             onClick={() => handleRegister(hackathon)}
                             className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-sm transition-all cursor-pointer flex items-center justify-center gap-1.5"
                           >
                             <span>Register</span>
                             <ArrowRight className="w-3.5 h-3.5" />
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => handleView(hackathon)}
-                            className="flex-1 py-2.5 rounded-xl bg-slate-200 text-slate-600 font-bold text-xs cursor-pointer"
-                          >
-                            View Archive
                           </button>
                         )}
                       </div>
@@ -483,7 +513,12 @@ export default function HackathonsPage() {
       {/* Modals */}
       <HackathonRegistrationModal
         isOpen={!!registerHackathon}
-        onClose={() => setRegisterHackathon(null)}
+        onClose={(didRegister) => {
+          if (didRegister && registerHackathon) {
+            setRegisteredIds((prev) => new Set([...prev, registerHackathon.id]));
+          }
+          setRegisterHackathon(null);
+        }}
         hackathon={registerHackathon}
       />
 

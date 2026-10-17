@@ -220,7 +220,17 @@ export default function RegistrationsPage() {
 
                       {/* Main info */}
                       <div className="flex-1 min-w-0 space-y-1.5">
-                        <h3 className="text-sm font-black text-slate-900 leading-snug">{reg.eventOrHackathon}</h3>
+                        <div className="flex items-start justify-between gap-2">
+                          <h3 className="text-sm font-black text-slate-900 leading-snug">{reg.eventOrHackathon}</h3>
+                          {reg.hackathonId && (
+                            <Link
+                              href={`/hackathons/${reg.hackathonId}`}
+                              className="shrink-0 text-[10px] font-semibold text-indigo-600 hover:text-indigo-800 hover:underline"
+                            >
+                              View →
+                            </Link>
+                          )}
+                        </div>
                         <div className="flex flex-wrap items-center gap-2">
                           {/* Status badge */}
                           <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full border text-[10px] font-bold ${sc.classes}`}>
