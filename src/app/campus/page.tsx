@@ -6,6 +6,7 @@ import confetti from "canvas-confetti";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { JoinCommunityModal } from "@/components/modals/JoinCommunityModal";
+import { CampusAmbassadorModal } from "@/components/modals/CampusAmbassadorModal";
 import { LegalModal } from "@/components/modals/LegalModal";
 import {
   SITE_CONFIG,
@@ -32,6 +33,7 @@ import {
 
 export default function CampusPage() {
   const [isJoinOpen, setIsJoinOpen] = useState(false);
+  const [isAmbassadorOpen, setIsAmbassadorOpen] = useState(false);
   const [legalModalType, setLegalModalType] = useState<"privacy" | "terms" | "code_of_conduct" | null>(null);
 
   // Form state
@@ -451,7 +453,7 @@ export default function CampusPage() {
               Become the official NEXHACK Campus Ambassador. Organize local study groups, lead hackathon teams from your college, and receive formal leadership honors.
             </p>
             <button
-              onClick={() => setIsJoinOpen(true)}
+              onClick={() => setIsAmbassadorOpen(true)}
               className="px-8 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-lg transition-all cursor-pointer"
             >
               Apply as Campus Lead
@@ -467,6 +469,11 @@ export default function CampusPage() {
         isOpen={isJoinOpen}
         onClose={() => setIsJoinOpen(false)}
         defaultRole="Campus Lead"
+      />
+
+      <CampusAmbassadorModal
+        isOpen={isAmbassadorOpen}
+        onClose={() => setIsAmbassadorOpen(false)}
       />
 
       <LegalModal

@@ -11,6 +11,7 @@ import {
   DbAdminLog,
   DbUserProfile,
   DbTeam,
+  DbAmbassadorApplication,
 } from "@/lib/dbTypes";
 
 interface AdminStats {
@@ -21,6 +22,7 @@ interface AdminStats {
   newsletters: number;
   users: number;
   teams: number;
+  ambassadors: number;
   isUsingMongo: boolean;
 }
 
@@ -75,6 +77,11 @@ interface AdminDataContextType {
   // Newsletter actions
   handleDeleteNewsletter: (id: string) => Promise<void>;
 
+  // Ambassador actions
+  ambassadorApplications: DbAmbassadorApplication[];
+  handleUpdateAmbassadorStatus: (id: string, status: DbAmbassadorApplication["status"]) => Promise<void>;
+  handleDeleteAmbassador: (id: string) => Promise<void>;
+
   // Modal helpers
   isCreateHackathonOpen: boolean;
   editingHackathon: DbHackathon | null;
@@ -118,6 +125,7 @@ export function AdminDataProvider({ children }: { children: React.ReactNode }) {
     newsletters: 0,
     users: 0,
     teams: 0,
+    ambassadors: 0,
     isUsingMongo: false,
   });
 
@@ -129,6 +137,7 @@ export function AdminDataProvider({ children }: { children: React.ReactNode }) {
   const [inquiries, setInquiries] = useState<DbCampusInquiry[]>([]);
   const [newsletters, setNewsletters] = useState<DbNewsletter[]>([]);
   const [logs, setLogs] = useState<DbAdminLog[]>([]);
+  const [ambassadorApplications, setAmbassadorApplications] = useState<DbAmbassadorApplication[]>([]);
 
   // Auth checking
   useEffect(() => {
@@ -207,6 +216,7 @@ export function AdminDataProvider({ children }: { children: React.ReactNode }) {
         inqRes,
         newsRes,
         logRes,
+        ambRes,
       ] = await Promise.all([
         fetch("/api/admin/stats").catch(() => null),
         fetch("/api/admin/hackathons").catch(() => null),
@@ -217,6 +227,7 @@ export function AdminDataProvider({ children }: { children: React.ReactNode }) {
         fetch("/api/admin/inquiries").catch(() => null),
         fetch("/api/admin/newsletters").catch(() => null),
         fetch("/api/admin/logs").catch(() => null),
+        fetch("/api/admin/ambassadors").catch(() => null),
       ]);
 
       if (statsRes && statsRes.ok) {
@@ -254,6 +265,13 @@ export function AdminDataProvider({ children }: { children: React.ReactNode }) {
       if (logRes && logRes.ok) {
         const data = await logRes.json();
         if (data.success) setLogs(data.logs);
+      }
+      if (ambRes && ambRes.ok) {
+        const data = await ambRes.json();
+        if (data.success) {
+          setAmbassadorApplications(data.applications);
+          setStats((prev) => ({ ...prev, ambassadors: data.applications.length }));
+        }
       }
     } catch (err) {
       console.error("Admin data fetch error:", err);
@@ -448,6 +466,30 @@ export function AdminDataProvider({ children }: { children: React.ReactNode }) {
     fetchData();
   };
 
+  // Ambassador Handlers
+  const handleUpdateAmbassadorStatus = async (
+    id: string,
+    status: DbAmbassadorApplication["status"]
+  ) => {
+    await fetch("/api/admin/ambassadors", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, status }),
+    });
+    fetchData();
+  };
+
+  const handleDeleteAmbassador = async (id: string) => {
+    const res = await fetch(`/api/admin/ambassadors?id=${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    });
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      throw new Error(data.error || "Failed to delete ambassador application");
+    }
+    fetchData();
+  };
+
   // Modal actions
   const openCreateHackathon = (hackathon?: DbHackathon | null) => {
     setEditingHackathon(hackathon || null);
@@ -505,6 +547,9 @@ export function AdminDataProvider({ children }: { children: React.ReactNode }) {
         handleUpdateInquiryStatus,
         handleDeleteInquiry,
         handleDeleteNewsletter,
+        ambassadorApplications,
+        handleUpdateAmbassadorStatus,
+        handleDeleteAmbassador,
         isCreateHackathonOpen,
         editingHackathon,
         openCreateHackathon,

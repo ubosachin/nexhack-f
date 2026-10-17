@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { JoinCommunityModal } from "@/components/modals/JoinCommunityModal";
+import { CampusAmbassadorModal } from "@/components/modals/CampusAmbassadorModal";
 import { LegalModal } from "@/components/modals/LegalModal";
 import {
   SITE_CONFIG,
@@ -38,6 +39,7 @@ import {
   InstagramIcon,
 } from "@/components/ui/SocialIcons";export default function CommunityPage() {
   const [isJoinOpen, setIsJoinOpen] = useState(false);
+  const [isAmbassadorOpen, setIsAmbassadorOpen] = useState(false);
   const [citySearch, setCitySearch] = useState("");
   const [legalModalType, setLegalModalType] = useState<"privacy" | "terms" | "code_of_conduct" | null>(null);
 
@@ -92,7 +94,7 @@ import {
                 </a>
 
                 <button
-                  onClick={() => setIsJoinOpen(true)}
+                  onClick={() => setIsAmbassadorOpen(true)}
                   className="px-6 py-3.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs border border-slate-200 transition-all cursor-pointer"
                 >
                   Apply as Campus Ambassador
@@ -403,6 +405,11 @@ import {
       <JoinCommunityModal
         isOpen={isJoinOpen}
         onClose={() => setIsJoinOpen(false)}
+      />
+
+      <CampusAmbassadorModal
+        isOpen={isAmbassadorOpen}
+        onClose={() => setIsAmbassadorOpen(false)}
       />
 
       <LegalModal

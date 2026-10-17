@@ -173,7 +173,23 @@ export interface DbTeam {
   updatedAt: string;
 }
 
-// ── Team Join Request ─────────────────────────────────────────────────────────
+// ── Campus Ambassador Application ────────────────────────────────────────────
+export interface DbAmbassadorApplication {
+  _id?: string;
+  id: string;
+  fullName: string;
+  email: string;
+  phone: string;
+  college: string;
+  city: string;
+  yearOfStudy: string;
+  course: string;
+  linkedinUrl?: string;
+  whyAmbassador: string;
+  status: "Pending" | "Shortlisted" | "Approved" | "Rejected";
+  createdAt: string;
+}
+
 export interface DbTeamJoinRequest {
   _id?: string;
   id: string;

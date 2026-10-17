@@ -12,6 +12,7 @@ import {
   DbTeam,
   DbTeamMember,
   DbTeamJoinRequest,
+  DbAmbassadorApplication,
 } from "./dbTypes";
 
 const uri = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/nexhack";
@@ -226,6 +227,7 @@ const inMemoryStore = {
   userProfiles: [] as DbUserProfile[],
   teams: [] as DbTeam[],
   teamJoinRequests: [] as DbTeamJoinRequest[],
+  ambassadorApplications: [] as DbAmbassadorApplication[],
 };
 
 export async function connectToDatabase(): Promise<{ client: MongoClient | null; db: Db | null; isUsingMongo: boolean }> {
@@ -1398,5 +1400,100 @@ export const dbService = {
       return req;
     }
     return null;
+  },
+
+  // ── 12. CAMPUS AMBASSADOR APPLICATIONS ────────────────────────────────────
+
+  async getAmbassadorApplications(): Promise<DbAmbassadorApplication[]> {
+    const { db, isUsingMongo } = await connectToDatabase();
+    if (isUsingMongo && db) {
+      const list = await db
+        .collection("ambassador_applications")
+        .find({})
+        .sort({ createdAt: -1 })
+        .toArray();
+      return list as unknown as DbAmbassadorApplication[];
+    }
+    return [...inMemoryStore.ambassadorApplications];
+  },
+
+  async addAmbassadorApplication(
+    data: Omit<DbAmbassadorApplication, "id" | "status" | "createdAt">
+  ): Promise<DbAmbassadorApplication> {
+    // Duplicate check — same email
+    const { db, isUsingMongo } = await connectToDatabase();
+    if (isUsingMongo && db) {
+      const existing = await db
+        .collection("ambassador_applications")
+        .findOne({ email: data.email.toLowerCase().trim(), status: { $ne: "Rejected" } });
+      if (existing) {
+        throw new Error("An application with this email already exists.");
+      }
+    } else {
+      const existing = inMemoryStore.ambassadorApplications.find(
+        (a) => a.email.toLowerCase() === data.email.toLowerCase() && a.status !== "Rejected"
+      );
+      if (existing) throw new Error("An application with this email already exists.");
+    }
+
+    const newDoc: DbAmbassadorApplication = {
+      id: `amb-${Date.now()}`,
+      fullName: data.fullName.trim(),
+      email: data.email.toLowerCase().trim(),
+      phone: data.phone.trim(),
+      college: data.college.trim(),
+      city: data.city.trim(),
+      yearOfStudy: data.yearOfStudy.trim(),
+      course: data.course.trim(),
+      linkedinUrl: data.linkedinUrl?.trim() || undefined,
+      whyAmbassador: data.whyAmbassador.trim(),
+      status: "Pending",
+      createdAt: new Date().toISOString(),
+    };
+
+    if (isUsingMongo && db) {
+      await db.collection("ambassador_applications").insertOne(newDoc as any);
+    } else {
+      inMemoryStore.ambassadorApplications.unshift(newDoc);
+    }
+    await this.logAction("New Ambassador Application", `${newDoc.fullName} (${newDoc.email})`, "Public");
+    return newDoc;
+  },
+
+  async updateAmbassadorStatus(
+    id: string,
+    status: DbAmbassadorApplication["status"]
+  ): Promise<boolean> {
+    const { db, isUsingMongo } = await connectToDatabase();
+    if (isUsingMongo && db) {
+      const res = await db
+        .collection("ambassador_applications")
+        .updateOne({ id }, { $set: { status } });
+      await this.logAction("Updated Ambassador Status", `${id} → ${status}`, "Admin");
+      return res.matchedCount > 0;
+    }
+    const item = inMemoryStore.ambassadorApplications.find((a) => a.id === id);
+    if (item) {
+      item.status = status;
+      await this.logAction("Updated Ambassador Status", `${id} → ${status}`, "Admin");
+      return true;
+    }
+    return false;
+  },
+
+  async deleteAmbassadorApplication(id: string): Promise<boolean> {
+    const { db, isUsingMongo } = await connectToDatabase();
+    if (isUsingMongo && db) {
+      const res = await db.collection("ambassador_applications").deleteOne({ id });
+      await this.logAction("Deleted Ambassador Application", id, "Admin");
+      return res.deletedCount > 0;
+    }
+    const idx = inMemoryStore.ambassadorApplications.findIndex((a) => a.id === id);
+    if (idx !== -1) {
+      inMemoryStore.ambassadorApplications.splice(idx, 1);
+      await this.logAction("Deleted Ambassador Application", id, "Admin");
+      return true;
+    }
+    return false;
   },
 };

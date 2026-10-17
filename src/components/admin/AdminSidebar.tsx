@@ -18,6 +18,7 @@ import {
   Database,
   ChevronRight,
   Settings,
+  Star,
 } from "lucide-react";
 import { NexhackLogo } from "@/components/ui/NexhackLogo";
 import { useAdminData } from "./AdminDataContext";
@@ -88,6 +89,12 @@ export function AdminSidebar({
       label: "Campus Inquiries",
       icon: Building2,
       badge: stats.inquiries || null,
+    },
+    {
+      href: "/admin/ambassadors",
+      label: "Ambassadors",
+      icon: Star,
+      badge: (stats as any).ambassadors || null,
     },
     {
       href: "/admin/newsletters",
