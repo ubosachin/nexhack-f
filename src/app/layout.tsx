@@ -121,7 +121,7 @@ export default function RootLayout({
     email: "hello@nexhack.in",
     sameAs: [
       "https://x.com/nexhack_in",
-      "https://linkedin.com/company/nexhack",
+      "https://www.linkedin.com/company/nexhack-in",
       "https://www.instagram.com/nexhack.in/",
       "https://github.com/nexhack-tech",
     ],

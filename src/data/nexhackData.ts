@@ -120,7 +120,7 @@ export const SITE_CONFIG = {
   foundedYear: 2026,
   currentYear: 2026,
   whatsappUrl: "https://chat.whatsapp.com/CNHePNAmYHE8Y4klu7TPMq",
-  linkedinUrl: "https://linkedin.com/company/nexhack",
+  linkedinUrl: "https://www.linkedin.com/company/nexhack-in",
   instagramUrl: "https://www.instagram.com/nexhack.in/",
   xUrl: "https://x.com/nexhack_in",
   githubUrl: "https://github.com/nexhack-in",
