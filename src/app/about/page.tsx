@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { JoinCommunityModal } from "@/components/modals/JoinCommunityModal";
+import { CampusAmbassadorModal } from "@/components/modals/CampusAmbassadorModal";
 import { LegalModal } from "@/components/modals/LegalModal";
 import {
   SITE_CONFIG,
@@ -40,6 +41,7 @@ import {
 
 export default function AboutPage() {
   const [isJoinOpen, setIsJoinOpen] = useState(false);
+  const [isAmbassadorOpen, setIsAmbassadorOpen] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
   const [legalModalType, setLegalModalType] = useState<"privacy" | "terms" | "code_of_conduct" | null>(null);
 
@@ -332,7 +334,7 @@ export default function AboutPage() {
                 </p>
               </div>
               <button
-                onClick={() => setIsJoinOpen(true)}
+                onClick={() => setIsAmbassadorOpen(true)}
                 className="px-6 py-3 rounded-xl bg-white text-blue-700 font-bold text-xs hover:bg-blue-50 transition-all shrink-0 cursor-pointer shadow-md"
               >
                 Apply as Volunteer / Lead
@@ -491,6 +493,11 @@ export default function AboutPage() {
       <JoinCommunityModal
         isOpen={isJoinOpen}
         onClose={() => setIsJoinOpen(false)}
+      />
+
+      <CampusAmbassadorModal
+        isOpen={isAmbassadorOpen}
+        onClose={() => setIsAmbassadorOpen(false)}
       />
 
       <LegalModal
