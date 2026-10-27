@@ -13,6 +13,11 @@ import {
   DbTeamMember,
   DbTeamJoinRequest,
   DbAmbassadorApplication,
+  DbRound,
+  DbSubmission,
+  DbVerificationCode,
+  DbCodeRedemption,
+  DbTeamInvitation,
 } from "./dbTypes";
 
 const uri = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/nexhack";
@@ -228,6 +233,11 @@ const inMemoryStore = {
   teams: [] as DbTeam[],
   teamJoinRequests: [] as DbTeamJoinRequest[],
   ambassadorApplications: [] as DbAmbassadorApplication[],
+  rounds: [] as DbRound[],
+  submissions: [] as DbSubmission[],
+  verificationCodes: [] as DbVerificationCode[],
+  codeRedemptions: [] as DbCodeRedemption[],
+  teamInvitations: [] as DbTeamInvitation[],
 };
 
 export async function connectToDatabase(): Promise<{ client: MongoClient | null; db: Db | null; isUsingMongo: boolean }> {
@@ -1494,6 +1504,297 @@ export const dbService = {
       await this.logAction("Deleted Ambassador Application", id, "Admin");
       return true;
     }
+    return false;
+  },
+
+  // ── 13. ROUNDS ──────────────────────────────────────────────────────────────
+
+  async getRoundsByHackathon(hackathonId: string, publishedOnly = false): Promise<DbRound[]> {
+    const { db, isUsingMongo } = await connectToDatabase();
+    const filter: Record<string, unknown> = { hackathonId };
+    if (publishedOnly) filter.isPublished = true;
+    if (isUsingMongo && db) {
+      const list = await db.collection("rounds").find(filter).sort({ roundNumber: 1 }).toArray();
+      return list as unknown as DbRound[];
+    }
+    return inMemoryStore.rounds
+      .filter((r) => r.hackathonId === hackathonId && (!publishedOnly || r.isPublished))
+      .sort((a, b) => a.roundNumber - b.roundNumber);
+  },
+
+  async getRound(id: string): Promise<DbRound | null> {
+    const { db, isUsingMongo } = await connectToDatabase();
+    if (isUsingMongo && db) {
+      const doc = await db.collection("rounds").findOne({ id });
+      return doc as unknown as DbRound | null;
+    }
+    return inMemoryStore.rounds.find((r) => r.id === id) ?? null;
+  },
+
+  async createRound(data: Omit<DbRound, "id" | "createdAt" | "updatedAt">): Promise<DbRound> {
+    const now = new Date().toISOString();
+    const newDoc: DbRound = { id: `round-${Date.now()}`, ...data, createdAt: now, updatedAt: now };
+    const { db, isUsingMongo } = await connectToDatabase();
+    if (isUsingMongo && db) {
+      await db.collection("rounds").insertOne(newDoc as any);
+    } else {
+      inMemoryStore.rounds.push(newDoc);
+    }
+    await this.logAction("Created Round", `${newDoc.name} (hackathon: ${newDoc.hackathonId})`, "Admin");
+    return newDoc;
+  },
+
+  async updateRound(id: string, updates: Partial<DbRound>): Promise<boolean> {
+    const now = new Date().toISOString();
+    const { db, isUsingMongo } = await connectToDatabase();
+    if (isUsingMongo && db) {
+      const res = await db.collection("rounds").updateOne({ id }, { $set: { ...updates, updatedAt: now } });
+      await this.logAction("Updated Round", id, "Admin");
+      return res.matchedCount > 0;
+    }
+    const idx = inMemoryStore.rounds.findIndex((r) => r.id === id);
+    if (idx !== -1) {
+      inMemoryStore.rounds[idx] = { ...inMemoryStore.rounds[idx], ...updates, updatedAt: now };
+      await this.logAction("Updated Round", id, "Admin");
+      return true;
+    }
+    return false;
+  },
+
+  async deleteRound(id: string): Promise<boolean> {
+    const { db, isUsingMongo } = await connectToDatabase();
+    if (isUsingMongo && db) {
+      const res = await db.collection("rounds").deleteOne({ id });
+      await db.collection("submissions").deleteMany({ roundId: id });
+      await this.logAction("Deleted Round + Submissions", id, "Admin");
+      return res.deletedCount > 0;
+    }
+    const idx = inMemoryStore.rounds.findIndex((r) => r.id === id);
+    if (idx !== -1) {
+      inMemoryStore.rounds.splice(idx, 1);
+      inMemoryStore.submissions = inMemoryStore.submissions.filter((s) => s.roundId !== id);
+      return true;
+    }
+    return false;
+  },
+
+  // ── 14. SUBMISSIONS ─────────────────────────────────────────────────────────
+
+  async getSubmissionsByRound(hackathonId: string, roundId: string): Promise<DbSubmission[]> {
+    const { db, isUsingMongo } = await connectToDatabase();
+    if (isUsingMongo && db) {
+      const list = await db.collection("submissions").find({ hackathonId, roundId }).sort({ submittedAt: -1 }).toArray();
+      return list as unknown as DbSubmission[];
+    }
+    return inMemoryStore.submissions.filter((s) => s.hackathonId === hackathonId && s.roundId === roundId);
+  },
+
+  async getSubmissionsByHackathon(hackathonId: string): Promise<DbSubmission[]> {
+    const { db, isUsingMongo } = await connectToDatabase();
+    if (isUsingMongo && db) {
+      const list = await db.collection("submissions").find({ hackathonId }).sort({ submittedAt: -1 }).toArray();
+      return list as unknown as DbSubmission[];
+    }
+    return inMemoryStore.submissions.filter((s) => s.hackathonId === hackathonId);
+  },
+
+  async getSubmissionByTeamAndRound(hackathonId: string, roundId: string, teamId?: string, userId?: string): Promise<DbSubmission | null> {
+    const { db, isUsingMongo } = await connectToDatabase();
+    const filter: Record<string, unknown> = { hackathonId, roundId };
+    if (teamId) filter.teamId = teamId;
+    else if (userId) filter.userId = userId;
+    if (isUsingMongo && db) {
+      const doc = await db.collection("submissions").findOne(filter);
+      return doc as unknown as DbSubmission | null;
+    }
+    return inMemoryStore.submissions.find((s) =>
+      s.hackathonId === hackathonId && s.roundId === roundId &&
+      (teamId ? s.teamId === teamId : s.userId === userId)
+    ) ?? null;
+  },
+
+  async upsertSubmission(data: Omit<DbSubmission, "id" | "createdAt">): Promise<DbSubmission> {
+    const now = new Date().toISOString();
+    const { db, isUsingMongo } = await connectToDatabase();
+    // Try to find existing
+    const existing = await this.getSubmissionByTeamAndRound(data.hackathonId, data.roundId, data.teamId, data.userId);
+    if (existing) {
+      await this.updateSubmission(existing.id, { ...data, lastUpdatedAt: now });
+      return { ...existing, ...data, lastUpdatedAt: now };
+    }
+    const newDoc: DbSubmission = { id: `sub-${Date.now()}`, ...data, createdAt: now };
+    if (isUsingMongo && db) {
+      await db.collection("submissions").insertOne(newDoc as any);
+    } else {
+      inMemoryStore.submissions.unshift(newDoc);
+    }
+    await this.logAction("New Submission", `round:${data.roundId} by ${data.userId}`, "User");
+    return newDoc;
+  },
+
+  async updateSubmission(id: string, updates: Partial<DbSubmission>): Promise<boolean> {
+    const now = new Date().toISOString();
+    const { db, isUsingMongo } = await connectToDatabase();
+    if (isUsingMongo && db) {
+      const res = await db.collection("submissions").updateOne({ id }, { $set: { ...updates, lastUpdatedAt: now } });
+      return res.matchedCount > 0;
+    }
+    const idx = inMemoryStore.submissions.findIndex((s) => s.id === id);
+    if (idx !== -1) { inMemoryStore.submissions[idx] = { ...inMemoryStore.submissions[idx], ...updates, lastUpdatedAt: now }; return true; }
+    return false;
+  },
+
+  // ── 15. VERIFICATION CODES ──────────────────────────────────────────────────
+
+  async getCodesByHackathon(hackathonId: string): Promise<DbVerificationCode[]> {
+    const { db, isUsingMongo } = await connectToDatabase();
+    if (isUsingMongo && db) {
+      const list = await db.collection("verification_codes").find({ hackathonId }).sort({ createdAt: -1 }).toArray();
+      return list as unknown as DbVerificationCode[];
+    }
+    return inMemoryStore.verificationCodes.filter((c) => c.hackathonId === hackathonId);
+  },
+
+  async createVerificationCode(data: Omit<DbVerificationCode, "id" | "usedCount" | "createdAt">): Promise<DbVerificationCode> {
+    const newDoc: DbVerificationCode = { id: `code-${Date.now()}`, usedCount: 0, ...data, createdAt: new Date().toISOString() };
+    const { db, isUsingMongo } = await connectToDatabase();
+    if (isUsingMongo && db) {
+      await db.collection("verification_codes").insertOne(newDoc as any);
+    } else {
+      inMemoryStore.verificationCodes.push(newDoc);
+    }
+    await this.logAction("Generated Verification Code", `${newDoc.code} (hackathon: ${newDoc.hackathonId})`, "Admin");
+    return newDoc;
+  },
+
+  async validateAndRedeemCode(hackathonId: string, code: string, userId: string, email: string): Promise<{ success: boolean; error?: string; codeDoc?: DbVerificationCode }> {
+    const { db, isUsingMongo } = await connectToDatabase();
+    let codeDoc: DbVerificationCode | null = null;
+    if (isUsingMongo && db) {
+      const raw = await db.collection("verification_codes").findOne({ code: code.toUpperCase().trim(), hackathonId });
+      codeDoc = raw as unknown as DbVerificationCode | null;
+    } else {
+      codeDoc = inMemoryStore.verificationCodes.find((c) => c.code === code.toUpperCase().trim() && c.hackathonId === hackathonId) ?? null;
+    }
+    if (!codeDoc) return { success: false, error: "Invalid verification code." };
+    if (!codeDoc.isActive) return { success: false, error: "This code has been deactivated." };
+    if (codeDoc.expiresAt && new Date() > new Date(codeDoc.expiresAt)) return { success: false, error: "This code has expired." };
+    if (codeDoc.maxUses > 0 && codeDoc.usedCount >= codeDoc.maxUses) return { success: false, error: "This code has reached its usage limit." };
+
+    // Check if user already redeemed
+    let alreadyRedeemed = false;
+    if (isUsingMongo && db) {
+      const existing = await db.collection("code_redemptions").findOne({ codeId: codeDoc.id, userId });
+      alreadyRedeemed = !!existing;
+    } else {
+      alreadyRedeemed = inMemoryStore.codeRedemptions.some((r) => r.codeId === codeDoc!.id && r.userId === userId);
+    }
+    if (alreadyRedeemed) return { success: false, error: "You have already verified this code." };
+
+    // Record redemption
+    const redemption: DbCodeRedemption = { id: `rdm-${Date.now()}`, codeId: codeDoc.id, hackathonId, userId, email, redeemedAt: new Date().toISOString() };
+    if (isUsingMongo && db) {
+      await db.collection("code_redemptions").insertOne(redemption as any);
+      await db.collection("verification_codes").updateOne({ id: codeDoc.id }, { $inc: { usedCount: 1 } });
+    } else {
+      inMemoryStore.codeRedemptions.push(redemption);
+      codeDoc.usedCount += 1;
+    }
+    await this.logAction("Code Redeemed", `${code} by ${email}`, "User");
+    return { success: true, codeDoc };
+  },
+
+  async updateVerificationCode(id: string, updates: Partial<DbVerificationCode>): Promise<boolean> {
+    const { db, isUsingMongo } = await connectToDatabase();
+    if (isUsingMongo && db) {
+      const res = await db.collection("verification_codes").updateOne({ id }, { $set: updates });
+      return res.matchedCount > 0;
+    }
+    const idx = inMemoryStore.verificationCodes.findIndex((c) => c.id === id);
+    if (idx !== -1) { inMemoryStore.verificationCodes[idx] = { ...inMemoryStore.verificationCodes[idx], ...updates }; return true; }
+    return false;
+  },
+
+  async deleteVerificationCode(id: string): Promise<boolean> {
+    const { db, isUsingMongo } = await connectToDatabase();
+    if (isUsingMongo && db) {
+      const res = await db.collection("verification_codes").deleteOne({ id });
+      return res.deletedCount > 0;
+    }
+    const idx = inMemoryStore.verificationCodes.findIndex((c) => c.id === id);
+    if (idx !== -1) { inMemoryStore.verificationCodes.splice(idx, 1); return true; }
+    return false;
+  },
+
+  // ── 16. TEAM INVITATIONS ────────────────────────────────────────────────────
+
+  async getInvitationsByTeam(teamId: string): Promise<DbTeamInvitation[]> {
+    const { db, isUsingMongo } = await connectToDatabase();
+    if (isUsingMongo && db) {
+      const list = await db.collection("team_invitations").find({ teamId }).sort({ createdAt: -1 }).toArray();
+      return list as unknown as DbTeamInvitation[];
+    }
+    return inMemoryStore.teamInvitations.filter((i) => i.teamId === teamId);
+  },
+
+  async getInvitationsByEmail(email: string): Promise<DbTeamInvitation[]> {
+    const normalizedEmail = email.toLowerCase().trim();
+    const { db, isUsingMongo } = await connectToDatabase();
+    if (isUsingMongo && db) {
+      const list = await db.collection("team_invitations").find({ invitedEmail: normalizedEmail, status: "Pending" }).toArray();
+      return list as unknown as DbTeamInvitation[];
+    }
+    return inMemoryStore.teamInvitations.filter((i) => i.invitedEmail === normalizedEmail && i.status === "Pending");
+  },
+
+  async getInvitationByToken(token: string): Promise<DbTeamInvitation | null> {
+    const { db, isUsingMongo } = await connectToDatabase();
+    if (isUsingMongo && db) {
+      const doc = await db.collection("team_invitations").findOne({ token });
+      return doc as unknown as DbTeamInvitation | null;
+    }
+    return inMemoryStore.teamInvitations.find((i) => i.token === token) ?? null;
+  },
+
+  async createInvitation(data: Omit<DbTeamInvitation, "id" | "status" | "createdAt" | "updatedAt">): Promise<DbTeamInvitation> {
+    const now = new Date().toISOString();
+    // Cancel any existing pending invitation for the same email+team
+    await this.cancelInvitationsByEmailAndTeam(data.invitedEmail, data.teamId);
+    const newDoc: DbTeamInvitation = { id: `inv-${Date.now()}`, status: "Pending", ...data, createdAt: now, updatedAt: now };
+    const { db, isUsingMongo } = await connectToDatabase();
+    if (isUsingMongo && db) {
+      await db.collection("team_invitations").insertOne(newDoc as any);
+    } else {
+      inMemoryStore.teamInvitations.unshift(newDoc);
+    }
+    await this.logAction("Team Invitation Sent", `${data.invitedEmail} → team:${data.teamId}`, data.invitedByName);
+    return newDoc;
+  },
+
+  async cancelInvitationsByEmailAndTeam(email: string, teamId: string): Promise<void> {
+    const normalizedEmail = email.toLowerCase().trim();
+    const { db, isUsingMongo } = await connectToDatabase();
+    if (isUsingMongo && db) {
+      await db.collection("team_invitations").updateMany(
+        { invitedEmail: normalizedEmail, teamId, status: "Pending" },
+        { $set: { status: "Cancelled", updatedAt: new Date().toISOString() } }
+      );
+    } else {
+      inMemoryStore.teamInvitations
+        .filter((i) => i.invitedEmail === normalizedEmail && i.teamId === teamId && i.status === "Pending")
+        .forEach((i) => { i.status = "Cancelled"; i.updatedAt = new Date().toISOString(); });
+    }
+  },
+
+  async updateInvitation(id: string, updates: Partial<DbTeamInvitation>): Promise<boolean> {
+    const now = new Date().toISOString();
+    const { db, isUsingMongo } = await connectToDatabase();
+    if (isUsingMongo && db) {
+      const res = await db.collection("team_invitations").updateOne({ id }, { $set: { ...updates, updatedAt: now } });
+      return res.matchedCount > 0;
+    }
+    const idx = inMemoryStore.teamInvitations.findIndex((i) => i.id === id);
+    if (idx !== -1) { inMemoryStore.teamInvitations[idx] = { ...inMemoryStore.teamInvitations[idx], ...updates, updatedAt: now }; return true; }
     return false;
   },
 };

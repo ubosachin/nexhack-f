@@ -19,6 +19,9 @@ import {
   ChevronRight,
   Settings,
   Star,
+  Layers,
+  FileText,
+  Key,
 } from "lucide-react";
 import { NexhackLogo } from "@/components/ui/NexhackLogo";
 import { useAdminData } from "./AdminDataContext";
@@ -95,6 +98,24 @@ export function AdminSidebar({
       label: "Ambassadors",
       icon: Star,
       badge: (stats as any).ambassadors || null,
+    },
+    {
+      href: "/admin/rounds",
+      label: "Rounds",
+      icon: Layers,
+      badge: null,
+    },
+    {
+      href: "/admin/submissions",
+      label: "Submissions",
+      icon: FileText,
+      badge: null,
+    },
+    {
+      href: "/admin/codes",
+      label: "Verification Codes",
+      icon: Key,
+      badge: null,
     },
     {
       href: "/admin/newsletters",

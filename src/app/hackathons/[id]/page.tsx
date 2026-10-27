@@ -8,6 +8,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { LegalModal } from "@/components/modals/LegalModal";
 import { HackathonRegistrationModal } from "@/components/modals/HackathonRegistrationModal";
+import { VerifyCodeModal } from "@/components/modals/VerifyCodeModal";
 import { RichTextDisplay } from "@/components/ui/RichTextEditor";
 import type { DbHackathon } from "@/lib/dbTypes";
 import {
@@ -91,6 +92,7 @@ export default function HackathonDetailPage() {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [isRegOpen, setIsRegOpen] = useState(false);
+  const [isVerifyOpen, setIsVerifyOpen] = useState(false);
   const [alreadyRegistered, setAlreadyRegistered] = useState(false);
   const [legalType, setLegalType] = useState<"privacy" | "terms" | "code_of_conduct" | null>(null);
   const [isMobile, setIsMobile] = useState(false);
@@ -377,23 +379,33 @@ export default function HackathonDetailPage() {
                         Already Registered
                       </div>
                     ) : (
-                      <button
-                        onClick={() => setIsRegOpen(true)}
-                        disabled={!canRegister}
-                        className={`w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all ${
-                          canRegister
-                            ? `bg-gradient-to-r ${grad} text-white shadow-md hover:shadow-lg cursor-pointer`
-                            : "bg-slate-100 text-slate-400 cursor-not-allowed"
-                        }`}
-                      >
-                        {regStatus === "open" ? (
-                          <><span>Register Now</span><ArrowRight className="w-4 h-4" /></>
-                        ) : regStatus === "upcoming" ? (
-                          <><Clock className="w-4 h-4" /><span>Not Open Yet</span></>
-                        ) : (
-                          <><AlertCircle className="w-4 h-4" /><span>Registration Closed</span></>
+                      <div className="space-y-2">
+                        <button
+                          onClick={() => setIsRegOpen(true)}
+                          disabled={!canRegister}
+                          className={`w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all ${
+                            canRegister
+                              ? `bg-gradient-to-r ${grad} text-white shadow-md hover:shadow-lg cursor-pointer`
+                              : "bg-slate-100 text-slate-400 cursor-not-allowed"
+                          }`}
+                        >
+                          {regStatus === "open" ? (
+                            <><span>Register Now</span><ArrowRight className="w-4 h-4" /></>
+                          ) : regStatus === "upcoming" ? (
+                            <><Clock className="w-4 h-4" /><span>Not Open Yet</span></>
+                          ) : (
+                            <><AlertCircle className="w-4 h-4" /><span>Registration Closed</span></>
+                          )}
+                        </button>
+                        {canRegister && (
+                          <button
+                            onClick={() => setIsVerifyOpen(true)}
+                            className="w-full py-2 rounded-xl text-xs font-semibold text-indigo-600 hover:text-indigo-800 border border-indigo-200 hover:border-indigo-400 hover:bg-indigo-50 transition-all cursor-pointer"
+                          >
+                            Already on Unstop? Verify here →
+                          </button>
                         )}
-                      </button>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -471,6 +483,15 @@ export default function HackathonDetailPage() {
         onClose={(didRegister) => {
           setIsRegOpen(false);
           if (didRegister) setAlreadyRegistered(true);
+        }}
+        hackathon={hackathon}
+      />
+
+      <VerifyCodeModal
+        isOpen={isVerifyOpen}
+        onClose={(didVerify) => {
+          setIsVerifyOpen(false);
+          if (didVerify) setAlreadyRegistered(true);
         }}
         hackathon={hackathon}
       />

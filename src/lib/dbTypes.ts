@@ -204,3 +204,125 @@ export interface DbTeamJoinRequest {
   createdAt: string;
   updatedAt: string;
 }
+
+// ── Hackathon Round ──────────────────────────────────────────────────────────
+
+export type SubmissionType =
+  | "text"          // free-form text / description
+  | "file"          // PDF, PPT, ZIP, etc.
+  | "links"         // GitHub + demo URLs
+  | "video"         // video demo link
+  | "combined";     // multiple field types
+
+export interface RoundCustomField {
+  id: string;
+  label: string;
+  type: "text" | "url" | "file" | "textarea";
+  required: boolean;
+  placeholder?: string;
+  acceptedFileTypes?: string;   // e.g. ".pdf,.pptx,.zip"
+  maxFileSizeMb?: number;
+}
+
+export interface DbRound {
+  _id?: string;
+  id: string;
+  hackathonId: string;
+  name: string;                 // "Round 1 – Ideation"
+  description: string;
+  instructions: string;
+  roundNumber: number;          // 1, 2, 3 …
+  submissionType: SubmissionType;
+  acceptedFileTypes?: string;   // ".pdf,.pptx,.zip"
+  maxFileSizeMb?: number;       // default 25
+  maxSubmissionsPerTeam?: number; // 1 = one-shot, default
+  allowResubmission: boolean;
+  startDate?: string;           // ISO
+  deadline?: string;            // ISO
+  evaluationCriteria?: { criterion: string; maxMarks: number }[];
+  customFields: RoundCustomField[];
+  status: "Upcoming" | "Open" | "Closed" | "Completed";
+  isPublished: boolean;         // false = draft, not visible to participants
+  visibleToAll: boolean;        // false = only teams that advanced to this round
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ── Submission ───────────────────────────────────────────────────────────────
+
+export interface SubmissionFile {
+  fieldId: string;         // matches RoundCustomField.id or "mainFile"
+  fileName: string;
+  fileUrl: string;         // Cloudinary / local URL
+  fileSize: number;        // bytes
+  uploadedAt: string;
+}
+
+export interface DbSubmission {
+  _id?: string;
+  id: string;
+  hackathonId: string;
+  roundId: string;
+  teamId?: string;
+  teamName?: string;
+  userId: string;           // submitter (team captain or individual)
+  registrationId: string;   // links back to DbRegistration
+
+  // Content
+  textContent?: string;
+  githubUrl?: string;
+  demoUrl?: string;
+  videoUrl?: string;
+  customFieldValues?: Record<string, string>; // fieldId → value
+  files?: SubmissionFile[];
+
+  // Meta
+  status: "Draft" | "Submitted" | "Under Review" | "Evaluated";
+  submittedAt?: string;
+  lastUpdatedAt: string;
+  createdAt: string;
+}
+
+// ── Verification Code (Unstop / external platform) ──────────────────────────
+
+export interface DbVerificationCode {
+  _id?: string;
+  id: string;
+  hackathonId: string;
+  code: string;             // unique alphanumeric
+  maxUses: number;          // 0 = unlimited
+  usedCount: number;
+  isActive: boolean;
+  note?: string;            // admin note, e.g. "Batch A – IIIT Hyderabad"
+  createdAt: string;
+  expiresAt?: string;       // ISO, optional
+}
+
+export interface DbCodeRedemption {
+  _id?: string;
+  id: string;
+  codeId: string;
+  hackathonId: string;
+  userId: string;
+  email: string;
+  redeemedAt: string;
+}
+
+// ── Team Email Invitation ────────────────────────────────────────────────────
+
+export interface DbTeamInvitation {
+  _id?: string;
+  id: string;
+  hackathonId: string;
+  teamId: string;
+  teamName: string;
+  invitedEmail: string;       // the email being invited
+  invitedByUserId: string;    // team captain
+  invitedByName: string;
+  token: string;              // secure random 32-char hex token
+  status: "Pending" | "Accepted" | "Declined" | "Expired" | "Cancelled";
+  expiresAt: string;          // ISO – default 7 days
+  acceptedByUserId?: string;
+  createdAt: string;
+  updatedAt: string;
+}
