@@ -23,7 +23,9 @@ export async function POST(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   try {
     const body = await req.json();
-    const { id, ...updates } = body;
+    // Destructure all fields that must never be sent to $set
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { id, _id, createdAt, registeredCount, ...updates } = body;
     if (!id) {
       return NextResponse.json({ success: false, error: "Missing hackathon id" }, { status: 400 });
     }

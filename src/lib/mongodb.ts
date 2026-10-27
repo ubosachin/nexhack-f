@@ -378,11 +378,14 @@ export const dbService = {
   },
 
   async updateHackathon(id: string, updates: Partial<DbHackathon>): Promise<boolean> {
+    // Never send MongoDB's immutable _id or generated fields to $set
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { _id, createdAt, registeredCount, ...safeUpdates } = updates as any;
     const { db, isUsingMongo } = await connectToDatabase();
     if (isUsingMongo && db) {
       const res = await db.collection("hackathons").updateOne(
         { id },
-        { $set: { ...updates, updatedAt: new Date().toISOString() } }
+        { $set: { ...safeUpdates, updatedAt: new Date().toISOString() } }
       );
       await this.logAction("Updated Hackathon", id, "Admin");
       return res.matchedCount > 0;
@@ -391,7 +394,7 @@ export const dbService = {
     if (idx !== -1) {
       inMemoryStore.hackathons[idx] = {
         ...inMemoryStore.hackathons[idx],
-        ...updates,
+        ...safeUpdates,
         updatedAt: new Date().toISOString(),
       };
       await this.logAction("Updated Hackathon", id, "Admin");
