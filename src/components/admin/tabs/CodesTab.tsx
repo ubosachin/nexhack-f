@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Key, Plus, Trash2, Loader2, Copy, CheckCircle2, ToggleLeft, ToggleRight, Download } from "lucide-react";
 import type { DbVerificationCode, DbHackathon } from "@/lib/dbTypes";
+import { fmtDate, datetimeLocalToIso } from "@/lib/dateUtils";
 
 interface CodesTabProps {
   hackathons: DbHackathon[];
@@ -43,7 +44,7 @@ export function CodesTab({ hackathons }: CodesTabProps) {
       const res = await fetch(`/api/admin/hackathons/${selectedHackathonId}/codes`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ count: genCount, maxUses: genMaxUses, note: genNote || undefined, expiresAt: genExpiry ? new Date(genExpiry).toISOString() : undefined }),
+        body: JSON.stringify({ count: genCount, maxUses: genMaxUses, note: genNote || undefined, expiresAt: genExpiry ? datetimeLocalToIso(genExpiry) : undefined }),
       });
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
@@ -121,7 +122,7 @@ export function CodesTab({ hackathons }: CodesTabProps) {
                 <p className="text-[10px] text-slate-400 mt-0.5">0 = unlimited</p>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Expiry (optional)</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Expiry <span className="font-normal text-slate-400">(IST, optional)</span></label>
                 <input type="datetime-local" value={genExpiry} onChange={(e) => setGenExpiry(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500" />
               </div>
               <div>
@@ -181,7 +182,7 @@ export function CodesTab({ hackathons }: CodesTabProps) {
                         </span>
                       </td>
                       <td className="p-3 text-slate-500">{code.note || "—"}</td>
-                      <td className="p-3 text-slate-500">{code.expiresAt ? new Date(code.expiresAt).toLocaleDateString("en-IN") : "—"}</td>
+                      <td className="p-3 text-slate-500">{code.expiresAt ? fmtDate(code.expiresAt) : "—"}</td>
                       <td className="p-3 text-right">
                         <div className="flex items-center justify-end gap-1.5">
                           <button onClick={() => toggleActive(code)} title={code.isActive ? "Deactivate" : "Activate"} className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg cursor-pointer">

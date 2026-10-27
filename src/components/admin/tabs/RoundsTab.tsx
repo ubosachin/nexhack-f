@@ -6,6 +6,7 @@ import {
   Clock, CheckCircle2, AlertCircle, Eye, EyeOff, Save, X,
 } from "lucide-react";
 import type { DbRound, SubmissionType } from "@/lib/dbTypes";
+import { isoToDatetimeLocal, datetimeLocalToIso, fmtDateTime } from "@/lib/dateUtils";
 
 interface RoundsTabProps {
   hackathonId: string;
@@ -87,8 +88,8 @@ export function RoundsTab({ hackathonId, hackathonName }: RoundsTabProps) {
       maxFileSizeMb: round.maxFileSizeMb ?? 25,
       maxSubmissionsPerTeam: round.maxSubmissionsPerTeam ?? 1,
       allowResubmission: round.allowResubmission,
-      startDate: round.startDate ? round.startDate.slice(0, 16) : "",
-      deadline: round.deadline ? round.deadline.slice(0, 16) : "",
+      startDate: round.startDate ? isoToDatetimeLocal(round.startDate) : "",
+      deadline: round.deadline ? isoToDatetimeLocal(round.deadline) : "",
       evaluationCriteria: round.evaluationCriteria || [],
       customFields: round.customFields || [],
       status: round.status,
@@ -106,8 +107,8 @@ export function RoundsTab({ hackathonId, hackathonName }: RoundsTabProps) {
     try {
       const payload = {
         ...formData,
-        startDate: formData.startDate ? new Date(formData.startDate).toISOString() : undefined,
-        deadline: formData.deadline ? new Date(formData.deadline).toISOString() : undefined,
+        startDate: formData.startDate ? datetimeLocalToIso(formData.startDate) : undefined,
+        deadline: formData.deadline ? datetimeLocalToIso(formData.deadline) : undefined,
       };
       let res;
       if (editingRound) {
@@ -215,11 +216,11 @@ export function RoundsTab({ hackathonId, hackathonName }: RoundsTabProps) {
             )}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Start Date</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Start Date <span className="font-normal text-slate-400">(IST)</span></label>
                 <input type="datetime-local" value={formData.startDate || ""} onChange={(e) => set({ startDate: e.target.value })} className={inputCls} />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Submission Deadline</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Submission Deadline <span className="font-normal text-slate-400">(IST)</span></label>
                 <input type="datetime-local" value={formData.deadline || ""} onChange={(e) => set({ deadline: e.target.value })} className={inputCls} />
               </div>
             </div>
@@ -275,7 +276,7 @@ export function RoundsTab({ hackathonId, hackathonName }: RoundsTabProps) {
                       ? <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1"><Eye className="w-3 h-3" />Published</span>
                       : <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-500 border border-slate-200 flex items-center gap-1"><EyeOff className="w-3 h-3" />Draft</span>}
                   </div>
-                  <p className="text-xs text-slate-500 mt-0.5 truncate">{SUBMISSION_TYPES.find((t) => t.value === round.submissionType)?.label}{round.deadline ? ` · Deadline: ${new Date(round.deadline).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}` : ""}</p>
+                  <p className="text-xs text-slate-500 mt-0.5 truncate">{SUBMISSION_TYPES.find((t) => t.value === round.submissionType)?.label}{round.deadline ? ` · Deadline: ${fmtDateTime(round.deadline)}` : ""}</p>
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
                   <button onClick={() => togglePublish(round)} title={round.isPublished ? "Unpublish" : "Publish"} className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors cursor-pointer">
@@ -295,8 +296,8 @@ export function RoundsTab({ hackathonId, hackathonName }: RoundsTabProps) {
                   {round.description && <p>{round.description}</p>}
                   {round.instructions && <div><span className="font-semibold text-slate-800">Instructions: </span>{round.instructions}</div>}
                   <div className="flex flex-wrap gap-4">
-                    {round.startDate && <span><span className="font-semibold text-slate-800">Opens:</span> {new Date(round.startDate).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}</span>}
-                    {round.deadline && <span><span className="font-semibold text-slate-800">Deadline:</span> {new Date(round.deadline).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}</span>}
+                    {round.startDate && <span><span className="font-semibold text-slate-800">Opens:</span> {fmtDateTime(round.startDate)}</span>}
+                    {round.deadline && <span><span className="font-semibold text-slate-800">Deadline:</span> {fmtDateTime(round.deadline)}</span>}
                     {round.acceptedFileTypes && <span><span className="font-semibold text-slate-800">Files:</span> {round.acceptedFileTypes} (max {round.maxFileSizeMb}MB)</span>}
                     <span><span className="font-semibold text-slate-800">Resubmission:</span> {round.allowResubmission ? "Allowed" : "Not allowed"}</span>
                     <span><span className="font-semibold text-slate-800">Visibility:</span> {round.visibleToAll ? "All registered" : "Advanced teams only"}</span>

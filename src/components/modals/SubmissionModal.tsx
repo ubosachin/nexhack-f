@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { X, Send, Loader2, CheckCircle2, AlertCircle, Link as LinkIcon, Video, FileText, Clock } from "lucide-react";
 import type { DbRound, DbSubmission } from "@/lib/dbTypes";
+import { fmtDateTime } from "@/lib/dateUtils";
 
 interface Props {
   isOpen: boolean;
@@ -117,7 +118,7 @@ export function SubmissionModal({ isOpen, onClose, hackathon, round }: Props) {
                 <div className={`flex items-center gap-2 text-xs font-semibold ${isExpired ? "text-rose-600" : "text-slate-600"}`}>
                   <Clock className="w-3.5 h-3.5" />
                   {isExpired ? "Deadline passed: " : "Deadline: "}
-                  <span>{deadline.toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}</span>
+                  <span>{fmtDateTime(round.deadline!)}</span>
                 </div>
               )}
 

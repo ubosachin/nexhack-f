@@ -15,6 +15,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import type { DbAmbassadorApplication } from "@/lib/dbTypes";
+import { fmtDate } from "@/lib/dateUtils";
 
 interface AmbassadorsTabProps {
   applications: DbAmbassadorApplication[];
@@ -171,9 +172,7 @@ export function AmbassadorsTab({ applications, onUpdateStatus, onDelete }: Ambas
                       {app.status}
                     </span>
                     <span className="text-[10px] text-slate-400 ml-auto">
-                      {new Date(app.createdAt).toLocaleDateString("en-IN", {
-                        day: "numeric", month: "short", year: "numeric",
-                      })}
+                      {fmtDate(app.createdAt)}
                     </span>
                   </div>
 

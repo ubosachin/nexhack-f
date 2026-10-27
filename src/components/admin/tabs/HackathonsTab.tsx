@@ -18,6 +18,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { DbHackathon } from "@/lib/dbTypes";
+import { fmtDateTime } from "@/lib/dateUtils";
 
 interface HackathonsTabProps {
   hackathons: DbHackathon[];
@@ -214,13 +215,13 @@ export function HackathonsTab({
                     {hackathon.registrationStartDate && (
                       <div className="flex items-center gap-1.5 text-indigo-700">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-                        <span className="truncate">Opens: {new Date(hackathon.registrationStartDate).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}</span>
+                        <span className="truncate">Opens: {fmtDateTime(hackathon.registrationStartDate)}</span>
                       </div>
                     )}
                     {hackathon.registrationEndDate && (
                       <div className="flex items-center gap-1.5 text-indigo-700">
                         <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0" />
-                        <span className="truncate">Closes: {new Date(hackathon.registrationEndDate).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}</span>
+                        <span className="truncate">Closes: {fmtDateTime(hackathon.registrationEndDate)}</span>
                       </div>
                     )}
                     {hackathon.minTeamSize !== undefined && hackathon.maxTeamSize !== undefined && (

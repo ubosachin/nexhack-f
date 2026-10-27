@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Search, Download, Loader2, ExternalLink, FileText, Users, ChevronDown, ChevronUp } from "lucide-react";
 import type { DbSubmission, DbRound, DbHackathon } from "@/lib/dbTypes";
+import { fmtDate, fmtDateTime } from "@/lib/dateUtils";
 
 interface SubmissionsTabProps {
   hackathons: DbHackathon[];
@@ -152,7 +153,7 @@ export function SubmissionsTab({ hackathons }: SubmissionsTabProps) {
                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${statusColors[sub.status] || "bg-slate-100 text-slate-600 border-slate-200"}`}>{sub.status}</span>
                   </div>
                   <p className="text-xs text-slate-500 mt-0.5">
-                    {getRoundName(sub.roundId)} · {sub.submittedAt ? `Submitted ${new Date(sub.submittedAt).toLocaleDateString("en-IN", { dateStyle: "medium" })}` : "Not submitted"}
+                    {getRoundName(sub.roundId)} · {sub.submittedAt ? `Submitted ${fmtDate(sub.submittedAt)}` : "Not submitted"}
                   </p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
@@ -191,7 +192,7 @@ export function SubmissionsTab({ hackathons }: SubmissionsTabProps) {
                       </div>
                     </div>
                   )}
-                  <p className="text-slate-400">Submission ID: {sub.id} · Last updated: {new Date(sub.lastUpdatedAt).toLocaleString("en-IN")}</p>
+                  <p className="text-slate-400">Submission ID: {sub.id} · Last updated: {fmtDateTime(sub.lastUpdatedAt)}</p>
                 </div>
               )}
             </div>

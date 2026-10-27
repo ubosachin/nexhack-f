@@ -16,6 +16,7 @@ import {
   Crown,
 } from "lucide-react";
 import type { DbHackathon, DbTeam } from "@/lib/dbTypes";
+import { fmtDateTime } from "@/lib/dateUtils";
 
 type Step =
   | "choose-type"     // individual vs team
@@ -278,8 +279,8 @@ export function HackathonRegistrationModal({ isOpen, onClose, hackathon }: Props
               <AlertCircle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
               <span>
                 {isCompleted && "This hackathon is completed — registration is closed."}
-                {notStarted && `Registration opens on ${regStart!.toLocaleString()}.`}
-                {expired && !isCompleted && `Registration closed on ${regEnd!.toLocaleString()}.`}
+                {notStarted && `Registration opens on ${fmtDateTime(hackathon.registrationStartDate!)}.`}
+                {expired && !isCompleted && `Registration closed on ${fmtDateTime(hackathon.registrationEndDate!)}.`}
               </span>
             </div>
           )}

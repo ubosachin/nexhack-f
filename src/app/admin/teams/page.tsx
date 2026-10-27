@@ -15,6 +15,7 @@ import {
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { useAdminData } from "@/components/admin/AdminDataContext";
 import { DbTeam } from "@/lib/dbTypes";
+import { fmtDate } from "@/lib/dateUtils";
 
 export default function AdminTeamsPage() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -254,7 +255,7 @@ export default function AdminTeamsPage() {
                 {/* Actions */}
                 <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between">
                   <span className="text-[11px] text-slate-400">
-                    Created {new Date(team.createdAt).toLocaleDateString()}
+                    Created {fmtDate(team.createdAt)}
                   </span>
                   <button
                     onClick={() => onDisband(team.id, team.name)}

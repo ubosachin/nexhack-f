@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { GitHubIcon, LinkedInIcon } from "@/components/ui/SocialIcons";
 import { DbTeam, DbUserProfile } from "@/lib/dbTypes";
+import { fmtDate } from "@/lib/dateUtils";
 
 interface UsersTeamsTabProps {
   teams: DbTeam[];
@@ -238,7 +239,7 @@ export function UsersTeamsTab({
                   {/* Actions */}
                   <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between">
                     <span className="text-[11px] text-slate-400">
-                      Created {new Date(team.createdAt).toLocaleDateString()}
+                      Created {fmtDate(team.createdAt)}
                     </span>
                     <button
                       onClick={() => handleDeleteTeam(team.id, team.name)}

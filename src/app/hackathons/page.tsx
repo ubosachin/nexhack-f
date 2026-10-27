@@ -13,6 +13,7 @@ import {
   HACKATHON_RULES,
 } from "@/data/nexhackData";
 import type { DbHackathon } from "@/lib/dbTypes";
+import { fmtDate } from "@/lib/dateUtils";
 import {
   Trophy,
   ShieldCheck,
@@ -289,13 +290,13 @@ export default function HackathonsPage() {
                               {hackathon.registrationStartDate && (
                                 <div className="flex items-center gap-2">
                                   <CalendarCheck className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                                  <span>Opens: <span className="font-semibold text-slate-700">{new Date(hackathon.registrationStartDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</span></span>
+                                  <span>Opens: <span className="font-semibold text-slate-700">{fmtDate(hackathon.registrationStartDate)}</span></span>
                                 </div>
                               )}
                               {hackathon.registrationEndDate && (
                                 <div className="flex items-center gap-2">
                                   <CalendarX className="w-3.5 h-3.5 text-rose-500 shrink-0" />
-                                  <span>Closes: <span className="font-semibold text-slate-700">{new Date(hackathon.registrationEndDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</span></span>
+                                  <span>Closes: <span className="font-semibold text-slate-700">{fmtDate(hackathon.registrationEndDate)}</span></span>
                                 </div>
                               )}
                             </>

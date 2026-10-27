@@ -20,6 +20,7 @@ import {
 import { DbHackathon } from "@/lib/dbTypes";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { RichTextEditor } from "@/components/ui/RichTextEditor";
+import { isoToDatetimeLocal, datetimeLocalToIso } from "@/lib/dateUtils";
 
 interface CreateHackathonModalProps {
   isOpen: boolean;
@@ -316,16 +317,16 @@ export function CreateHackathonModal({ isOpen, onClose, onSubmit, initialData }:
               <Field label="Registration Opens">
                 <input
                   type="datetime-local"
-                  value={formData.registrationStartDate ? formData.registrationStartDate.slice(0, 16) : ""}
-                  onChange={(e) => set({ registrationStartDate: e.target.value ? new Date(e.target.value).toISOString() : "" })}
+                  value={isoToDatetimeLocal(formData.registrationStartDate)}
+                  onChange={(e) => set({ registrationStartDate: datetimeLocalToIso(e.target.value) })}
                   className={inputCls}
                 />
               </Field>
               <Field label="Registration Closes">
                 <input
                   type="datetime-local"
-                  value={formData.registrationEndDate ? formData.registrationEndDate.slice(0, 16) : ""}
-                  onChange={(e) => set({ registrationEndDate: e.target.value ? new Date(e.target.value).toISOString() : "" })}
+                  value={isoToDatetimeLocal(formData.registrationEndDate)}
+                  onChange={(e) => set({ registrationEndDate: datetimeLocalToIso(e.target.value) })}
                   className={inputCls}
                 />
               </Field>

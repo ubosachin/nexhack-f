@@ -14,6 +14,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { DbCampusInquiry } from "@/lib/dbTypes";
+import { fmtDate } from "@/lib/dateUtils";
 
 interface InquiriesTabProps {
   inquiries: DbCampusInquiry[];
@@ -166,7 +167,7 @@ export function InquiriesTab({ inquiries, onUpdateStatus, onDelete }: InquiriesT
 
               {/* Bottom */}
               <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400">
-                <span>Received {new Date(inq.createdAt).toLocaleDateString()}</span>
+                <span>Received {fmtDate(inq.createdAt)}</span>
                 <button
                   onClick={() => handleDelete(inq.id, inq.institutionName)}
                   disabled={deletingId === inq.id}

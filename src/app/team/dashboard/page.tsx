@@ -11,6 +11,7 @@ import {
   Loader2, Plus, Send, AlertCircle, Trash2, RefreshCw, Trophy,
 } from "lucide-react";
 import type { DbTeam, DbTeamInvitation } from "@/lib/dbTypes";
+import { fmtDate } from "@/lib/dateUtils";
 
 const MEMBER_STATUS_COLOR: Record<string, string> = {
   Accepted: "bg-emerald-50 text-emerald-700 border-emerald-200",
@@ -213,7 +214,7 @@ export default function TeamDashboard() {
                               <Mail className="w-4 h-4 text-slate-400 shrink-0" />
                               <div className="flex-1 min-w-0">
                                 <p className="text-xs font-semibold text-slate-900 truncate">{inv.invitedEmail}</p>
-                                <p className="text-[10px] text-slate-400">Expires {new Date(inv.expiresAt).toLocaleDateString("en-IN")}</p>
+                                <p className="text-[10px] text-slate-400">Expires {fmtDate(inv.expiresAt)}</p>
                               </div>
                               <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border shrink-0 ${MEMBER_STATUS_COLOR[inv.status] || "bg-slate-100 text-slate-500 border-slate-200"}`}>
                                 {inv.status}

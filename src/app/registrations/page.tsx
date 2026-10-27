@@ -14,6 +14,7 @@ import {
   Sparkles, Tag,
 } from "lucide-react";
 import type { DbRegistration } from "@/lib/dbTypes";
+import { fmtDate } from "@/lib/dateUtils";
 
 /* ── status config ── */
 const STATUS_CONFIG: Record<
@@ -251,7 +252,7 @@ export default function RegistrationsPage() {
                           )}
                         </div>
                         <p className="text-[11px] text-slate-400">
-                          Registered {new Date(reg.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                          Registered {fmtDate(reg.createdAt)}
                           {reg.collegeOrSchool && ` · ${reg.collegeOrSchool}`}
                         </p>
                       </div>

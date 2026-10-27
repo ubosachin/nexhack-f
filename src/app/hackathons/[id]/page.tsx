@@ -10,6 +10,7 @@ import { LegalModal } from "@/components/modals/LegalModal";
 import { HackathonRegistrationModal } from "@/components/modals/HackathonRegistrationModal";
 import { VerifyCodeModal } from "@/components/modals/VerifyCodeModal";
 import { RichTextDisplay } from "@/components/ui/RichTextEditor";
+import { fmtDateTime } from "@/lib/dateUtils";
 import type { DbHackathon } from "@/lib/dbTypes";
 import {
   Trophy,
@@ -40,13 +41,7 @@ function getRegStatus(h: DbHackathon): RegStatus {
 }
 
 function fmtDate(iso: string) {
-  return new Date(iso).toLocaleString("en-IN", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  return fmtDateTime(iso);
 }
 
 /* ── sub-components ────────────────────────────────────────────────────── */

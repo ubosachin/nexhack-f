@@ -3,6 +3,7 @@
 import React from "react";
 import { ShieldAlert, Clock, User, Activity } from "lucide-react";
 import { DbAdminLog } from "@/lib/dbTypes";
+import { fmtTimestamp } from "@/lib/dateUtils";
 
 interface AuditLogsTabProps {
   logs: DbAdminLog[];
@@ -51,7 +52,7 @@ export function AuditLogsTab({ logs }: AuditLogsTabProps) {
                 </div>
                 <div className="flex items-center justify-end gap-1.5 text-[10px] text-slate-400 mt-0.5">
                   <Clock className="w-3 h-3 text-slate-400" />
-                  <span>{new Date(log.timestamp).toLocaleString()}</span>
+                  <span>{fmtTimestamp(log.timestamp)}</span>
                 </div>
               </div>
             </div>

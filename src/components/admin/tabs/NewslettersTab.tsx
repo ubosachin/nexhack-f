@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Mail, Download, Trash2, Search, CheckCircle2, Loader2 } from "lucide-react";
 import { DbNewsletter } from "@/lib/dbTypes";
+import { fmtDate } from "@/lib/dateUtils";
 
 interface NewslettersTabProps {
   newsletters: DbNewsletter[];
@@ -119,7 +120,7 @@ export function NewslettersTab({ newsletters, onDelete }: NewslettersTabProps) {
                     </span>
                   </td>
                   <td className="p-4 text-slate-500">
-                    {new Date(item.createdAt).toLocaleDateString()}
+                    {fmtDate(item.createdAt)}
                   </td>
                   <td className="p-4 text-right">
                     <button

@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { useAdminData } from "@/components/admin/AdminDataContext";
+import { PLATFORM_TZ } from "@/lib/dateUtils";
 
 export default function AdminDashboardPage() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -108,7 +109,8 @@ export default function AdminDashboardPage() {
                   REAL-TIME ECOSYSTEM
                 </span>
                 <span className="text-xs text-slate-400 font-medium">
-                  {new Date().toLocaleDateString(undefined, {
+                  {new Date().toLocaleDateString("en-IN", {
+                    timeZone: PLATFORM_TZ,
                     weekday: "long",
                     month: "short",
                     day: "numeric",

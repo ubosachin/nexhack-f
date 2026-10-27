@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { GitHubIcon, LinkedInIcon } from "@/components/ui/SocialIcons";
 import { DbRegistration, DbHackathon } from "@/lib/dbTypes";
+import { fmtDate } from "@/lib/dateUtils";
 
 interface RegistrationsTabProps {
   registrations: DbRegistration[];
@@ -237,9 +238,7 @@ export function RegistrationsTab({
                     <p className="text-slate-500 text-[11px]">{reg.email}</p>
                     {reg.phone && <p className="text-slate-400 text-[10px]">{reg.phone}</p>}
                     <p className="text-slate-400 text-[10px] mt-0.5">
-                      {new Date(reg.createdAt).toLocaleDateString("en-IN", {
-                        day: "numeric", month: "short", year: "numeric",
-                      })}
+                      {fmtDate(reg.createdAt)}
                     </p>
                   </td>
 
