@@ -5,9 +5,11 @@ import { sendRegistrationVerifiedEmail } from "@/lib/mailer";
 
 /**
  * POST /api/hackathons/[id]/verify-code
- * Body: { code: string, fullName?: string, phone?: string, collegeOrSchool?: string }
  *
  * Validates an Unstop/admin-issued code and creates a verified registration.
+ * This endpoint is intentionally available only AFTER the main registration
+ * window has closed — it is the post-close verification path for participants
+ * who registered externally (e.g. on Unstop).
  */
 export async function POST(
   req: NextRequest,
@@ -18,7 +20,10 @@ export async function POST(
     const session = await auth();
 
     if (!session?.user?.id || !session.user.email) {
-      return NextResponse.json({ success: false, error: "You must be signed in to verify a code." }, { status: 401 });
+      return NextResponse.json(
+        { success: false, error: "You must be signed in to verify a code." },
+        { status: 401 }
+      );
     }
 
     const hackathon = await dbService.getHackathon(hackathonId);
@@ -26,24 +31,61 @@ export async function POST(
       return NextResponse.json({ success: false, error: "Hackathon not found." }, { status: 404 });
     }
     if (hackathon.status === "Completed") {
-      return NextResponse.json({ success: false, error: "This hackathon is completed." }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: "This hackathon is completed." },
+        { status: 400 }
+      );
+    }
+
+    // Gate: verify-code is only available after registration has closed
+    const now = new Date();
+    if (hackathon.registrationEndDate && now <= new Date(hackathon.registrationEndDate)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Registration is still open. Please use the standard registration flow. Code verification becomes available after the registration deadline.",
+        },
+        { status: 400 }
+      );
+    }
+    // Also block if registration hasn't even started (no point verifying yet)
+    if (hackathon.registrationStartDate && now < new Date(hackathon.registrationStartDate)) {
+      return NextResponse.json(
+        { success: false, error: "Registration has not opened yet." },
+        { status: 400 }
+      );
     }
 
     const body = await req.json();
     const { code, fullName, phone, collegeOrSchool } = body;
 
     if (!code?.trim()) {
-      return NextResponse.json({ success: false, error: "Verification code is required." }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: "Verification code is required." },
+        { status: 400 }
+      );
     }
 
     // Check not already registered
-    const existing = await dbService.checkExistingRegistration(hackathonId, session.user.email, session.user.id);
+    const existing = await dbService.checkExistingRegistration(
+      hackathonId,
+      session.user.email,
+      session.user.id
+    );
     if (existing) {
-      return NextResponse.json({ success: false, error: "You are already registered for this hackathon." }, { status: 409 });
+      return NextResponse.json(
+        { success: false, error: "You are already registered for this hackathon." },
+        { status: 409 }
+      );
     }
 
     // Validate & redeem code
-    const result = await dbService.validateAndRedeemCode(hackathonId, code, session.user.id, session.user.email);
+    const result = await dbService.validateAndRedeemCode(
+      hackathonId,
+      code,
+      session.user.id,
+      session.user.email
+    );
     if (!result.success) {
       return NextResponse.json({ success: false, error: result.error }, { status: 400 });
     }

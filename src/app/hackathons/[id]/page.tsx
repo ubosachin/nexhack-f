@@ -9,26 +9,17 @@ import { Footer } from "@/components/layout/Footer";
 import { LegalModal } from "@/components/modals/LegalModal";
 import { HackathonRegistrationModal } from "@/components/modals/HackathonRegistrationModal";
 import { VerifyCodeModal } from "@/components/modals/VerifyCodeModal";
+import { SubmissionModal } from "@/components/modals/SubmissionModal";
 import { RichTextDisplay } from "@/components/ui/RichTextEditor";
 import { fmtDateTime } from "@/lib/dateUtils";
-import type { DbHackathon } from "@/lib/dbTypes";
+import type { DbHackathon, DbRound } from "@/lib/dbTypes";
 import {
-  Trophy,
-  MapPin,
-  Users,
-  ArrowRight,
-  Tag,
-  Clock,
-  CheckCircle2,
-  AlertCircle,
-  Loader2,
-  ChevronLeft,
-  CalendarCheck,
-  CalendarX,
-  BadgeCheck,
+  Trophy, MapPin, Users, ArrowRight, Tag, Clock,
+  CheckCircle2, AlertCircle, Loader2, ChevronLeft,
+  CalendarCheck, CalendarX, BadgeCheck, Send, FileText, Lock,
 } from "lucide-react";
 
-/* ── helpers ────────────────────────────────────────────────────────────── */
+/* ── helpers ─────────────────────────────────────────────────────────────── */
 
 type RegStatus = "open" | "upcoming" | "closed" | "completed";
 
@@ -40,11 +31,12 @@ function getRegStatus(h: DbHackathon): RegStatus {
   return "open";
 }
 
-function fmtDate(iso: string) {
+/** Thin wrapper so we can call fmtDate(iso) consistently */
+function fmtDate(iso: string | undefined | null) {
   return fmtDateTime(iso);
 }
 
-/* ── sub-components ────────────────────────────────────────────────────── */
+/* ── sub-components ───────────────────────────────────────────────────────── */
 
 function RegStatusBadge({ status }: { status: RegStatus }) {
   if (status === "open")
@@ -76,7 +68,7 @@ function RegStatusBadge({ status }: { status: RegStatus }) {
   );
 }
 
-/* ── main page ─────────────────────────────────────────────────────────── */
+/* ── main page ────────────────────────────────────────────────────────────── */
 
 export default function HackathonDetailPage() {
   const params = useParams();
@@ -89,6 +81,9 @@ export default function HackathonDetailPage() {
   const [isRegOpen, setIsRegOpen] = useState(false);
   const [isVerifyOpen, setIsVerifyOpen] = useState(false);
   const [alreadyRegistered, setAlreadyRegistered] = useState(false);
+  const [rounds, setRounds] = useState<DbRound[]>([]);
+  const [activeRound, setActiveRound] = useState<DbRound | null>(null);
+  const [isSubmitOpen, setIsSubmitOpen] = useState(false);
   const [legalType, setLegalType] = useState<"privacy" | "terms" | "code_of_conduct" | null>(null);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -113,24 +108,30 @@ export default function HackathonDetailPage() {
       .finally(() => setLoading(false));
   }, [id]);
 
+  // Load rounds — only after registration closes (API enforces this too)
+  useEffect(() => {
+    if (!id || !hackathon) return;
+    const s = getRegStatus(hackathon);
+    if (s !== "closed" && s !== "completed") return;
+    fetch(`/api/hackathons/${id}/rounds`)
+      .then((r) => r.json())
+      .then((d) => { if (d.success && d.rounds?.length) setRounds(d.rounds); })
+      .catch(() => {});
+  }, [id, hackathon]);
+
   // Check if user is already registered
   const checkRegistration = useCallback(async () => {
     if (!id || !session?.user) return;
     try {
       const res = await fetch(`/api/user/registrations?hackathonId=${id}`);
       const data = await res.json();
-      if (data.success && data.registrations?.length > 0) {
-        setAlreadyRegistered(true);
-      }
-    } catch {
-      // silent — not critical
-    }
+      if (data.success && data.registrations?.length > 0) setAlreadyRegistered(true);
+    } catch { /* silent */ }
   }, [id, session?.user]);
 
-  useEffect(() => {
-    checkRegistration();
-  }, [checkRegistration]);
+  useEffect(() => { checkRegistration(); }, [checkRegistration]);
 
+  /* ── loading / not-found states ── */
   if (loading) {
     return (
       <div className="min-h-screen bg-white flex flex-col">
@@ -158,34 +159,39 @@ export default function HackathonDetailPage() {
     );
   }
 
+  /* ── derived values ── */
   const grad = hackathon.bannerGradient || "from-blue-600 via-indigo-600 to-cyan-500";
   const bannerSrc = isMobile && hackathon.mobileBannerUrl ? hackathon.mobileBannerUrl : hackathon.bannerUrl;
   const regStatus = getRegStatus(hackathon);
   const canRegister = regStatus === "open" && !alreadyRegistered;
+  const registrationClosed = regStatus === "closed" || regStatus === "completed";
   const minSize = hackathon.minTeamSize ?? 1;
   const maxSize = hackathon.maxTeamSize ?? 4;
   const isOnline = hackathon.mode === "Online";
 
+  /* ── render ── */
   return (
     <div className="min-h-screen bg-white text-[#0A0F1D] flex flex-col">
       <Navbar onJoinClick={() => canRegister && setIsRegOpen(true)} />
 
       <main className="flex-1 pt-16 sm:pt-20">
 
-        {/* ── BREADCRUMB ── */}
+        {/* BREADCRUMB */}
         <div className="bg-white border-b border-slate-100">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-            <Link href="/hackathons" className="inline-flex items-center gap-1.5 text-slate-500 hover:text-indigo-600 text-xs font-semibold transition-colors">
+            <Link
+              href="/hackathons"
+              className="inline-flex items-center gap-1.5 text-slate-500 hover:text-indigo-600 text-xs font-semibold transition-colors"
+            >
               <ChevronLeft className="w-3.5 h-3.5" />
               All Hackathons
             </Link>
           </div>
         </div>
 
-        {/* ── BANNER ── */}
+        {/* BANNER */}
         <section>
           {bannerSrc ? (
-            /* If a custom banner image exists — show it cleanly, full width, correct aspect ratio */
             <div className="w-full overflow-hidden bg-slate-100">
               <img
                 src={bannerSrc}
@@ -195,17 +201,14 @@ export default function HackathonDetailPage() {
               />
             </div>
           ) : (
-            /* No image — use gradient as a tasteful header bar (not full-background takeover) */
             <div className={`w-full bg-gradient-to-r ${grad}`} style={{ height: isMobile ? "8px" : "10px" }} />
           )}
-          {/* Gradient accent line below any banner */}
           <div className={`h-[3px] w-full bg-gradient-to-r ${grad}`} />
         </section>
 
-        {/* ── TITLE BLOCK (always below the banner, never overlapping) ── */}
+        {/* TITLE BLOCK */}
         <section className="bg-white border-b border-slate-100 shadow-sm">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-            {/* Badges row */}
             <div className="flex flex-wrap items-center gap-2 mb-3">
               {hackathon.edition && (
                 <span className={`text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-gradient-to-r ${grad} text-white`}>
@@ -225,17 +228,13 @@ export default function HackathonDetailPage() {
               <RegStatusBadge status={regStatus} />
             </div>
 
-            {/* Title + tagline */}
             <h1 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight leading-tight">
               {hackathon.name}
             </h1>
             {hackathon.tagline && (
-              <p className="text-slate-500 text-sm sm:text-base mt-1.5 italic">
-                "{hackathon.tagline}"
-              </p>
+              <p className="text-slate-500 text-sm sm:text-base mt-1.5 italic">"{hackathon.tagline}"</p>
             )}
 
-            {/* Key meta pills */}
             <div className="mt-4 flex flex-wrap gap-4 text-xs text-slate-600">
               {hackathon.prizePool && (
                 <span className="flex items-center gap-1.5 font-semibold text-slate-800">
@@ -247,7 +246,6 @@ export default function HackathonDetailPage() {
                 <Users className="w-4 h-4 text-blue-500" />
                 {hackathon.registeredCount.toLocaleString()} registered
               </span>
-              {/* Location only for non-online */}
               {!isOnline && hackathon.location && (
                 <span className="flex items-center gap-1.5">
                   <MapPin className="w-4 h-4 text-purple-500" />
@@ -256,7 +254,6 @@ export default function HackathonDetailPage() {
               )}
             </div>
 
-            {/* Registration dates */}
             {(hackathon.registrationStartDate || hackathon.registrationEndDate) && (
               <div className="mt-3 flex flex-wrap gap-4 text-xs">
                 {hackathon.registrationStartDate && (
@@ -276,12 +273,12 @@ export default function HackathonDetailPage() {
           </div>
         </section>
 
-        {/* ── MAIN CONTENT ── */}
+        {/* MAIN CONTENT */}
         <section className="py-8 sm:py-12 bg-slate-50/50">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
 
-              {/* ── LEFT: description + prizes ── */}
+              {/* ── LEFT col ── */}
               <div className="lg:col-span-2 space-y-6">
 
                 {/* Description */}
@@ -290,14 +287,13 @@ export default function HackathonDetailPage() {
                     <span className={`w-1 h-5 rounded-full bg-gradient-to-b ${grad}`} />
                     About this Hackathon
                   </h2>
-                  {hackathon.description ? (
-                    <RichTextDisplay html={hackathon.description} />
-                  ) : (
-                    <p className="text-sm text-slate-400 italic">No description provided yet.</p>
-                  )}
+                  {hackathon.description
+                    ? <RichTextDisplay html={hackathon.description} />
+                    : <p className="text-sm text-slate-400 italic">No description provided yet.</p>
+                  }
                 </div>
 
-                {/* Prizes — only shown if data exists */}
+                {/* Prizes */}
                 {hackathon.prizes && hackathon.prizes.length > 0 && (
                   <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8">
                     <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
@@ -322,9 +318,111 @@ export default function HackathonDetailPage() {
                     </div>
                   </div>
                 )}
-              </div>
 
-              {/* ── RIGHT: registration + quick info ── */}
+                {/*
+                  ── ROUNDS & SUBMISSIONS (post-registration only) ──
+                  Shown only when:
+                    1. Registration is closed / hackathon completed
+                    2. The user is logged in and registered
+                */}
+                {registrationClosed && alreadyRegistered && (
+                  <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8">
+                    <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-1 flex items-center gap-2">
+                      <FileText className="w-4 h-4 text-indigo-500" />
+                      Rounds &amp; Submissions
+                    </h2>
+                    <p className="text-xs text-slate-500 mb-5">
+                      Registration is closed. Submit your project for each open round below.
+                    </p>
+
+                    {rounds.length === 0 ? (
+                      <div className="flex items-center gap-3 p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-500">
+                        <Lock className="w-4 h-4 text-slate-400 shrink-0" />
+                        No rounds published yet. Check back soon.
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {rounds.map((round) => {
+                          const deadlinePassed = !!round.deadline && new Date() > new Date(round.deadline);
+                          const isOpen = round.status === "Open" && !deadlinePassed;
+                          return (
+                            <div
+                              key={round.id}
+                              className={`p-4 rounded-xl border transition-all ${isOpen ? "border-indigo-200 bg-indigo-50/40" : "border-slate-200 bg-slate-50"}`}
+                            >
+                              {/* round header */}
+                              <div className="flex items-center justify-between gap-3 mb-2">
+                                <div className="flex items-center gap-2">
+                                  <span className={`w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black bg-gradient-to-br ${grad} text-white shadow-sm shrink-0`}>
+                                    {round.roundNumber}
+                                  </span>
+                                  <span className="text-sm font-bold text-slate-900">{round.name}</span>
+                                </div>
+                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                                  isOpen ? "bg-emerald-50 text-emerald-700 border-emerald-200" :
+                                  round.status === "Upcoming" ? "bg-amber-50 text-amber-700 border-amber-200" :
+                                  "bg-slate-100 text-slate-500 border-slate-200"
+                                }`}>
+                                  {deadlinePassed ? "Closed" : round.status}
+                                </span>
+                              </div>
+
+                              {round.description && (
+                                <p className="text-xs text-slate-600 mb-2 leading-relaxed">{round.description}</p>
+                              )}
+
+                              {round.deadline && (
+                                <p className="text-xs text-slate-500 mb-3 flex items-center gap-1.5">
+                                  <Clock className="w-3 h-3 text-rose-400 shrink-0" />
+                                  Deadline: <span className="font-semibold text-slate-700 ml-0.5">{fmtDate(round.deadline)}</span>
+                                </p>
+                              )}
+
+                              {isOpen ? (
+                                <button
+                                  onClick={() => { setActiveRound(round); setIsSubmitOpen(true); }}
+                                  className={`w-full py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r ${grad} shadow-sm flex items-center justify-center gap-1.5 cursor-pointer hover:shadow-md transition-all`}
+                                >
+                                  <Send className="w-3.5 h-3.5" />
+                                  Submit for {round.name}
+                                </button>
+                              ) : round.status === "Upcoming" ? (
+                                <div className="w-full py-2 rounded-xl text-xs font-semibold text-slate-500 bg-slate-100 flex items-center justify-center gap-1.5">
+                                  <Clock className="w-3.5 h-3.5" /> Not open yet
+                                </div>
+                              ) : (
+                                <div className="w-full py-2 rounded-xl text-xs font-semibold text-slate-400 bg-slate-100 flex items-center justify-center gap-1.5">
+                                  <AlertCircle className="w-3.5 h-3.5" /> Submission closed
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Teaser: registered but reg still open */}
+                {!registrationClosed && alreadyRegistered && (
+                  <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+                    <div className="flex items-center gap-3 text-slate-600">
+                      <div className="p-2 rounded-xl bg-slate-100 shrink-0">
+                        <Lock className="w-4 h-4 text-slate-400" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold text-slate-800">Rounds &amp; Submissions</p>
+                        <p className="text-[11px] text-slate-500 mt-0.5">
+                          Available after registration closes. You're all set — check back once the deadline passes.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+              </div>{/* end left col */}
+
+              {/* ── RIGHT col ── */}
               <div className="space-y-4">
 
                 {/* Registration card */}
@@ -333,12 +431,10 @@ export default function HackathonDetailPage() {
                   <div className="p-5">
                     <h3 className="font-bold text-slate-900 text-sm mb-3">Join this Hackathon</h3>
 
-                    {/* Registration status */}
                     <div className="mb-3">
                       <RegStatusBadge status={regStatus} />
                     </div>
 
-                    {/* Reg dates summary */}
                     {(hackathon.registrationStartDate || hackathon.registrationEndDate) && (
                       <div className="mb-4 space-y-1.5 text-xs text-slate-500">
                         {hackathon.registrationStartDate && (
@@ -356,7 +452,6 @@ export default function HackathonDetailPage() {
                       </div>
                     )}
 
-                    {/* Team size */}
                     <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-xs text-slate-600 mb-4">
                       <div className="flex items-center gap-1.5 font-semibold text-slate-800 mb-1">
                         <Users className="w-3.5 h-3.5 text-indigo-500" />
@@ -367,7 +462,6 @@ export default function HackathonDetailPage() {
                         : `Teams of ${minSize}–${maxSize} members`}
                     </div>
 
-                    {/* CTA button */}
                     {alreadyRegistered ? (
                       <div className="w-full py-3 rounded-xl bg-emerald-50 border-2 border-emerald-300 text-emerald-700 font-bold text-sm flex items-center justify-center gap-2">
                         <BadgeCheck className="w-4 h-4" />
@@ -384,15 +478,16 @@ export default function HackathonDetailPage() {
                               : "bg-slate-100 text-slate-400 cursor-not-allowed"
                           }`}
                         >
-                          {regStatus === "open" ? (
-                            <><span>Register Now</span><ArrowRight className="w-4 h-4" /></>
-                          ) : regStatus === "upcoming" ? (
-                            <><Clock className="w-4 h-4" /><span>Not Open Yet</span></>
-                          ) : (
-                            <><AlertCircle className="w-4 h-4" /><span>Registration Closed</span></>
-                          )}
+                          {regStatus === "open"
+                            ? <><span>Register Now</span><ArrowRight className="w-4 h-4" /></>
+                            : regStatus === "upcoming"
+                            ? <><Clock className="w-4 h-4" /><span>Not Open Yet</span></>
+                            : <><AlertCircle className="w-4 h-4" /><span>Registration Closed</span></>
+                          }
                         </button>
-                        {canRegister && (
+
+                        {/* Verify via Unstop — only after registration closes, only if not yet registered */}
+                        {registrationClosed && session?.user && (
                           <button
                             onClick={() => setIsVerifyOpen(true)}
                             className="w-full py-2 rounded-xl text-xs font-semibold text-indigo-600 hover:text-indigo-800 border border-indigo-200 hover:border-indigo-400 hover:bg-indigo-50 transition-all cursor-pointer"
@@ -405,9 +500,10 @@ export default function HackathonDetailPage() {
                   </div>
                 </div>
 
-                {/* Quick info */}
+                {/* Quick info card */}
                 <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-3">
                   <h3 className="font-bold text-slate-900 text-xs uppercase tracking-wider">Details</h3>
+
                   <div className="space-y-3 text-xs">
                     {hackathon.prizePool && (
                       <div className="flex items-start gap-2.5 text-slate-600">
@@ -418,7 +514,6 @@ export default function HackathonDetailPage() {
                         </div>
                       </div>
                     )}
-                    {/* Location: only for In-Person / Hybrid */}
                     {!isOnline && hackathon.location && (
                       <div className="flex items-start gap-2.5 text-slate-600">
                         <MapPin className="w-4 h-4 text-purple-500 mt-0.5 shrink-0" />
@@ -437,7 +532,6 @@ export default function HackathonDetailPage() {
                     </div>
                   </div>
 
-                  {/* Eligibility */}
                   {hackathon.eligibility && (
                     <div className="pt-3 border-t border-slate-100">
                       <div className="text-xs font-semibold text-slate-800 mb-1 flex items-center gap-1.5">
@@ -448,7 +542,6 @@ export default function HackathonDetailPage() {
                     </div>
                   )}
 
-                  {/* Tags */}
                   {hackathon.tags && hackathon.tags.length > 0 && (
                     <div className="pt-3 border-t border-slate-100">
                       <div className="text-xs font-semibold text-slate-800 mb-2 flex items-center gap-1.5">
@@ -465,10 +558,13 @@ export default function HackathonDetailPage() {
                     </div>
                   )}
                 </div>
-              </div>
+
+              </div>{/* end right col */}
+
             </div>
           </div>
         </section>
+
       </main>
 
       <Footer onOpenLegal={(type) => setLegalType(type)} onJoinClick={() => canRegister && setIsRegOpen(true)} />
@@ -489,6 +585,13 @@ export default function HackathonDetailPage() {
           if (didVerify) setAlreadyRegistered(true);
         }}
         hackathon={hackathon}
+      />
+
+      <SubmissionModal
+        isOpen={isSubmitOpen}
+        onClose={() => { setIsSubmitOpen(false); setActiveRound(null); }}
+        hackathon={{ id: hackathon.id, name: hackathon.name, bannerGradient: hackathon.bannerGradient }}
+        round={activeRound}
       />
 
       <LegalModal

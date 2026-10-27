@@ -55,7 +55,17 @@ export async function POST(req: NextRequest, { params }: Params) {
       }
     }
 
-    // Verify user is registered for this hackathon
+    // Gate: submissions only available after registration has closed
+    const hackathonDoc = await dbService.getHackathon(hackathonId);
+    if (hackathonDoc?.registrationEndDate) {
+      if (new Date() <= new Date(hackathonDoc.registrationEndDate)) {
+        return NextResponse.json(
+          { success: false, error: "Submissions are not open yet — they become available once the registration window closes." },
+          { status: 400 }
+        );
+      }
+    }
+
     const registration = await dbService.checkExistingRegistration(hackathonId, session.user.email, session.user.id);
     if (!registration) {
       return NextResponse.json({ success: false, error: "You are not registered for this hackathon." }, { status: 403 });
@@ -90,12 +100,11 @@ export async function POST(req: NextRequest, { params }: Params) {
     });
 
     // Send confirmation (non-blocking)
-    const hackathon = await dbService.getHackathon(hackathonId);
     const baseUrl = process.env.NEXTAUTH_URL || "https://nexhack.in";
     sendSubmissionConfirmationEmail({
       to: session.user.email,
       teamName: hackathonTeam?.name,
-      hackathonName: hackathon?.name || "NEXHACK",
+      hackathonName: hackathonDoc?.name || "NEXHACK",
       roundName: round.name,
       dashboardUrl: `${baseUrl}/hackathons/${hackathonId}`,
     }).catch(() => {});
